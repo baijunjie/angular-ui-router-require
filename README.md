@@ -7,9 +7,9 @@
 ## 如果你满足以下条件，可以尝试使用
 
 - 公司过于保守，不愿意尝试其他新兴框架。
-- 项目中人员目前只熟悉 angular 1.x。
+- 项目中人员目前只熟悉 Angular 1.x。
 - 项目中人员比较习惯使用 jQuery 来完成除数据绑定以外的其他功能需求。
-- 项目中使用到大量需要操作DOM的插件，如：bootstrap 等。
+- 项目中使用到大量需要操作 DOM 的插件，如：Bootstrap 等。
 - 希望开发 SPA（单页面）应用，但又担心项目过于庞大，首次加载过慢。
 
 
@@ -79,7 +79,7 @@ var routes = [{
 
 - `component` - 组件（文件夹）路径。
 
-- `hasjs` - 可选。布尔值，明确指出组件是否包含 js，默认为 true。
+- `hasjs` - 可选。布尔值，明确指出组件是否包含 js，默认为 `true`。
 
 - `text` - 可选。路由文本。路由生成后可以在路由的 state 对象上访问到。
 
@@ -121,24 +121,24 @@ require(['routeApp'], function(routeApp) {
 
 - `install` - 安装路由。
 - `start` - 启动应用。
-- `changeBefore` - 传入一个 `Function`，注册路的 changeBefore 回调，对应 angular-ui-router 的 $stateChangeStart 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
-- `change` - 传入一个 `Function`，注册路由的 change 回调，对应 angular-ui-router 的 $stateChangeSuccess 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
-- `changeAfter` - 传入一个 `Function`，注册路由的 changeAfter 回调，对应 angular-ui-router 的 $viewContentLoaded 事件。回调参数为 `event`。
-- `controller` - 用于注册组件的 controller 控制器。实际上调用的是 `$controllerProvider.register`。
+- `changeBefore` - 传入一个 `Function`，注册路的 `changeBefore` 回调，对应 angular-ui-router 的 `$stateChangeStart` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
+- `change` - 传入一个 `Function`，注册路由的 `change` 回调，对应 angular-ui-router 的 `$stateChangeSuccess` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
+- `changeAfter` - 传入一个 `Function`，注册路由的 `changeAfter` 回调，对应 angular-ui-router 的 `$viewContentLoaded` 事件。回调参数为 `event`。
+- `controller` - 用于注册组件的 `controller` 控制器。实际上调用的是 `$controllerProvider.register`。
 
 
 
 ## 最后
 
-需要注意的是，每个组件注册的 controller 与 install 一样都会在每次页面安装时执行。
+需要注意的是，每个组件注册的 `controller` 与 `install` 一样都会在每次页面安装时执行。
 
 执行顺序是：
 
-- changeBefore 回调 =>
-- 执行旧组件页面的 uninstall，并将需要传递给新组件页面的数据通过 return 返回 =>
+- `changeBefore` 回调 =>
+- 执行旧组件页面的 `uninstall`，并将需要传递给新组件页面的数据通过 `return` 返回 =>
 - 新组件页面初始化(仅执行一次，之后再次安装页面不会执行) =>
-- change 回调 =>
-- 执行新组件页面的 controller =>
-- 执行新组件页面的 install，并将旧组件页面传递的数据注入 =>
-- changeAfter 回调 => End
+- `change` 回调 =>
+- 执行新组件页面的 `controller` =>
+- 执行新组件页面的 `install`，并将旧组件页面传递的数据注入 =>
+- `changeAfter` 回调 => End
 
