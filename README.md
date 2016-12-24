@@ -30,34 +30,36 @@ js 文件需要遵循 AMD 规范，使用 `define` 将文件定义为一个模�
 ```js
 define(['routeApp'], function(routeApp) {
 
-	routeApp.controller('componentCtrl', function($scope) {
-         // controller 内部在页面每次载入时也会执行
-		$scope.name = '我是一个组件';
-	});
+    routeApp.controller('componentCtrl', function($scope) {
+        // controller 内部在页面每次载入时也会执行
+        $scope.name = '我是一个组件';
+    });
     
+    var $component;
     function scrollHandle(e) {
-         // 屏幕滚动时的处理
+        // 屏幕滚动时的处理
     }
 
-	// 返回值可以包含安装和卸载方法
-	return {
-         // 安装
-		install: function(data) { // 接收上一个页面的传值
-			data && console.log(data.msg);
-             // 所有 DOM 操作，以及添加事件监听的行为必须在安装方法中执行
-			window.addEventListener('scroll', scrollHandle);
-		},
-         // 卸载
-		uninstall: function() {
-             // 移除事件监听，以及一些 DOM 的引用
-			window.removeEventListener('scroll', scrollHandle);
-			return { // 卸载后可以向下一个页面传值
-				msg: '传达我的问候'
-			};
-		}
-	}
+    // 返回值可以包含安装和卸载方法
+    return {
+        // 安装
+        install: function(data) { // 接收上一个页面的传值
+            data && console.log(data.msg);
+            // 所有 DOM 操作，以及添加事件监听的行为必须在安装方法中执行
+            $component = document.getElementById('component');
+            window.addEventListener('scroll', scrollHandle);
+        },
+        // 卸载
+        uninstall: function() {
+            // 移除事件监听，以及一些 DOM 的引用
+            window.removeEventListener('scroll', scrollHandle);
+            $component = null;
+            return { // 卸载后可以向下一个页面传值
+                msg: '传达我的问候'
+            };
+        }
+    }
 });
-
 ```
 
 ## 定义一个路由
@@ -73,23 +75,23 @@ var routes = [{
 
 路由属性的完整配置：
 
-- `name`:  路由链接的 ui-sref，同时也是路由的 state 名称。
+- `name` - 路由链接的 ui-sref，同时也是路由的 state 名称。
 
-- `component`:  组件（文件夹）路径。
+- `component` - 组件（文件夹）路径。
 
-- `hasjs`:   可选。布尔值，明确指出组件是否包含 js，默认为 true。
+- `hasjs` - 可选。布尔值，明确指出组件是否包含 js，默认为 true。
 
-- `text`:  可选。路由文本。路由生成后可以在路由的 state 对象上访问到。
+- `text` - 可选。路由文本。路由生成后可以在路由的 state 对象上访问到。
 
-- `path`:  可选。在浏览器地址栏显示的路径，同时也是生成链接的真实 href。默认情况下等于 name。
+- `path` - 可选。在浏览器地址栏显示的路径，同时也是生成链接的真实 href。默认情况下等于 name。
 
-- `from`:  可选。字符串或者正则表达式，所有匹配的路径都会重定向到该页面。默认为空。
+- `from` - 可选。字符串或者正则表达式，所有匹配的路径都会重定向到该页面。默认为空。
 
   ​             '*' 表示其余 url 都重定向到该页面。
 
   ​             '/path/*' 表示与星号之前路径匹配的所有 url 都会重定向到该页面。
 
-- `children`:  可选。子路由数组
+- `children` - 可选。子路由数组
 
 
 
@@ -115,19 +117,19 @@ require(['routeApp'], function(routeApp) {
 
 #### 属性：
 
-- `angular`:  angular 对象的引用。
-- `module`:  routeApp 的 module 对象引用。
-- `$state`:  angular-ui-router 的 $state 服务引用。
+- `angular` - angular 对象的引用。
+- `module` - routeApp 的 module 对象引用。
+- `$state` - angular-ui-router 的 $state 服务引用。
 
 #### 方法：
 
-- `install`:  安装路由。
-- `start`:  启动应用。
-- `changeBefore`:  传入一个 Function，注册路的 changeBefore 回调，对应 angular-ui-router 的 $stateChangeStart 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
+- `install` - 安装路由。
+- `start` - 启动应用。
+- `changeBefore` - 传入一个 `Function`，注册路的 changeBefore 回调，对应 angular-ui-router 的 $stateChangeStart 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
 
-* `change`:  注册路由的 change 回调，对应 angular-ui-router 的 $stateChangeSuccess 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
-* `changeAfter`:  注册路由的 changeAfter 回调，对应 angular-ui-router 的 $viewContentLoaded 事件。回调参数为 `event`。
-* `controller`:  用于注册组件的 controller 控制器。实际上调用的是 `$controllerProvider.register`。
+* `change` - 传入一个 `Function`，注册路由的 change 回调，对应 angular-ui-router 的 $stateChangeSuccess 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
+* `changeAfter` - 传入一个 `Function`，注册路由的 changeAfter 回调，对应 angular-ui-router 的 $viewContentLoaded 事件。回调参数为 `event`。
+* `controller` - 用于注册组件的 controller 控制器。实际上调用的是 `$controllerProvider.register`。
 
 
 
