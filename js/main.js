@@ -5,6 +5,7 @@ require(['routeApp'], function(routeApp) {
 
 		var routes = [{
 			text: 'Home',
+			name: 'home',
 			component: 'page/home',
 			hasjs: false,
 			from: '*'
@@ -23,7 +24,7 @@ require(['routeApp'], function(routeApp) {
 		}];
 
 		routeApp.module.controller('mainCtrl', function($scope) {
-			$scope.nav = routes;
+			$scope.menus = routes;
 		});
 
 		routeApp.change(function(e, toState, toParams, fromState, fromParams) {

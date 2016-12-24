@@ -4,9 +4,7 @@
 
 使用组件化的思路来定义页面。每一个页面组件有独立的 controller，controller 可以跟随组件自身被异步加载进主页面，不需要初始化时预先载入全部 controller 代码。并且组件也有完整的生命周期，可以实现安装与卸载，降低内存泄漏的风险。
 
-[Demo]()
-
-
+[Demo](http://htmlpreview.github.io/?https://github.com/baijunjie/angular-ui-router-require/blob/master/index.html)
 
 ## 如果你满足以下条件，可以尝试使用
 

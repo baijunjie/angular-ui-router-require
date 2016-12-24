@@ -2,6 +2,8 @@
  * Angular 1.X 组件化路由按需加载实现 v0.1.2
  * @author BaiJunjie
  *
+ * https://github.com/baijunjie/angular-ui-router-require
+ *
  * routeApp  是模块返回的对象，包含若干属性与方法。
  *           其中 $state 与 controller 必须在应用启动后才能使用。
  *
