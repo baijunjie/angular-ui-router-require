@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<title>routeApp</title>
+<style>
+html {
+	height: 100%;
+}
+body {
+	margin: 0;
+	height: 100%;
+}
+ul, li {
+	margin: 0;
+}
+#app {
+	height: 100%;
+}
+.header {
+	height: 50px;
+	line-height: 50px;
+	font-size: 20px;
+	text-align: center;
+	color: #fff;
+	background-color: gray;
+}
+.nav {
+	position: absolute;
+	left: 0;
+	top: 50px;
+	bottom: 0;
+	width: 200px;
+	line-height: 30px;
+	background-color: yellow;
+	text-indent: 2em;
+}
+.body {
+	position: absolute;
+	left: 200px;
+	right: 0;
+	top: 50px;
+	bottom: 0;
+	background-color: #fff;
+	overflow: auto;
+}
+</style>
+</head>
+<body ontouchstart ng-controller="mainCtrl">
+
+<div class="header">Header</div>
+
+<div class="nav">
+	<div ng-repeat="n in menus">
+		<a ui-sref="{{ n.name }}" ng-bind="n.text"></a>
+
+		<ul ng-if="n.children && n.children.length">
+			<li ng-repeat="m in n.children">
+				<a ui-sref="{{ m.name }}" ng-bind="m.text"></a>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div class="body">
+	<ui-view></ui-view>
+</div>
+
+<script src="js/lib/require.js"></script>
+<script src="js/require.config.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
