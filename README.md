@@ -122,10 +122,9 @@ require(['routeApp'], function(routeApp) {
 - `install` - 安装路由。
 - `start` - 启动应用。
 - `changeBefore` - 传入一个 `Function`，注册路的 changeBefore 回调，对应 angular-ui-router 的 $stateChangeStart 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
-
-* `change` - 传入一个 `Function`，注册路由的 change 回调，对应 angular-ui-router 的 $stateChangeSuccess 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
-* `changeAfter` - 传入一个 `Function`，注册路由的 changeAfter 回调，对应 angular-ui-router 的 $viewContentLoaded 事件。回调参数为 `event`。
-* `controller` - 用于注册组件的 controller 控制器。实际上调用的是 `$controllerProvider.register`。
+- `change` - 传入一个 `Function`，注册路由的 change 回调，对应 angular-ui-router 的 $stateChangeSuccess 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
+- `changeAfter` - 传入一个 `Function`，注册路由的 changeAfter 回调，对应 angular-ui-router 的 $viewContentLoaded 事件。回调参数为 `event`。
+- `controller` - 用于注册组件的 controller 控制器。实际上调用的是 `$controllerProvider.register`。
 
 
 
