@@ -1,5 +1,5 @@
 /**
- * Angular 1.X 组件化路由按需加载实现 v0.1.2
+ * Angular 1.X 组件化路由按需加载实现 v0.1.3
  * @author BaiJunjie
  *
  * https://github.com/baijunjie/angular-ui-router-require
@@ -26,7 +26,7 @@
  *                     children: [ ... ], // 可选。子路由数组
  *                 }, ... ])
  *
- * - start         启动应用。
+ * - start         启动应用。可以传入一个 DOM 元素，表示应用的挂在对象。默认为 document。
  *
  * - changeBefore  传入一个 Function，注册路的 changeBefore 回调，对应 angular-ui-router 的 $stateChangeStart 事件。
  *                 回调参数分别为 event, toState, toParams, fromState, fromParams。
@@ -119,8 +119,9 @@
 		routeChangeAfter = callback;
 	}
 
-	function start() {
-		angular.bootstrap(document, ['routeApp']);
+	function start(DOM) {
+		DOM = DOM || document;
+		angular.bootstrap(DOM, ['routeApp']);
 	}
 
 	var fileNameReg = new RegExp('[^/]*$'),

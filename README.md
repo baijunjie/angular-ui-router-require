@@ -122,7 +122,7 @@ require(['routeApp'], function(routeApp) {
 #### 方法：
 
 - `install` - 安装路由。
-- `start` - 启动应用。
+- `start` - 启动应用。可以传入一个 DOM 元素，表示应用的挂在对象。默认为 document。
 - `changeBefore` - 传入一个 `Function`，注册路的 `changeBefore` 回调，对应 angular-ui-router 的 `$stateChangeStart` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
 - `change` - 传入一个 `Function`，注册路由的 `change` 回调，对应 angular-ui-router 的 `$stateChangeSuccess` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
 - `changeAfter` - 传入一个 `Function`，注册路由的 `changeAfter` 回调，对应 angular-ui-router 的 `$viewContentLoaded` 事件。回调参数为 `event`。
