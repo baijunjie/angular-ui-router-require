@@ -62,6 +62,8 @@ define(['routeApp'], function(routeApp) {
 });
 ```
 
+注意，模块返回的 `install` 与 `uninstall` 并不是必须的，如果代码中没有对其他对象的强引用操作，则可以省略返回值。
+
 ## 定义一个路由
 
 一个路由也就是一个 angular-ui-router 的 state。
