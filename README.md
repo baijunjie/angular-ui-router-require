@@ -127,8 +127,7 @@ require(['routeApp'], function(routeApp) {
 - `controller` - 用于注册组件的 `controller` 控制器。实际上调用的是 `$controllerProvider.register`。
 
 
-
-## 最后
+## 路由组件的生命周期
 
 需要注意的是，每个组件注册的 `controller` 与 `install` 一样都会在每次页面安装时执行。
 
@@ -141,4 +140,8 @@ require(['routeApp'], function(routeApp) {
 - 执行新组件页面的 `controller` =>
 - 执行新组件页面的 `install`，并将旧组件页面传递的数据注入 =>
 - `changeAfter` 回调 => End
+
+## 最后
+
+我们可以使用 [r.js](https://github.com/requirejs/r.js) 来打包压缩项目主页面所用到的所有 js 模块。组件的 js 无需打包，组件被加载时，它们才会被载入页面。其余的 css、image 等文件使用一些前端自动化工具打包压缩即可。
 
