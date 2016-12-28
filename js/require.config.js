@@ -3,13 +3,18 @@ require.config({
 	paths: {
 		'angular': 'lib/angular.min',
 		'angular-ui-router': 'lib/angular-ui-router',
-		'routeApp': 'routeApp'
+		'angular-translate': 'lib/angular-translate.min',
+		'routeApp': 'routeApp',
+		'i18n': 'i18n'
 	},
 	shim: {
 		'angular': {
 			exports: 'angular'
 		},
 		'angular-ui-router': {
+			deps: ['angular']
+		},
+		'angular-translate': {
 			deps: ['angular']
 		}
 	},

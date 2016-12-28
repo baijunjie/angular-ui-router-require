@@ -1,5 +1,5 @@
 /**
- * Angular 1.X 组件化路由按需加载实现 v0.1.3
+ * Angular 1.X 组件化路由按需加载实现 v0.1.4
  * @author BaiJunjie
  *
  * https://github.com/baijunjie/angular-ui-router-require
@@ -67,7 +67,7 @@
 
 	var curPage, returnValue,
 		routeChange, routeChangeBefore, routeChangeAfter,
-		routeApp = angular.extend({}, {
+		routeApp = {
 			angular: angular,
 			module: angular.module('routeApp', ['ui.router']),
 			install: install,
@@ -75,23 +75,7 @@
 			change: change,
 			changeBefore: changeBefore,
 			changeAfter: changeAfter
-		});
-
-	routeApp.module.run(['$rootScope', '$state', function($rootScope, $state) {
-		$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
-			routeChangeBefore && routeChangeBefore(event, toState, toParams, fromState, fromParams);
-			returnValue = curPage && curPage.uninstall && curPage.uninstall();
-		});
-		$rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-			routeChange && routeChange(event, toState, toParams, fromState, fromParams);
-		});
-		$rootScope.$on('$viewContentLoaded', function(event) {
-			curPage && curPage.install && curPage.install(returnValue);
-			routeChangeAfter && routeChangeAfter(event);
-		});
-
-		routeApp.$state = $state;
-	}]);
+		};
 
 	routeApp.module.config(['$controllerProvider', function($controllerProvider) {
 		routeApp.controller = function() {
@@ -100,28 +84,49 @@
 		};
 	}]);
 
+	routeApp.module.run(['$rootScope', '$state', function($rootScope, $state) {
+		$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+			routeChangeBefore && routeChangeBefore.apply(routeApp, arguments);
+			returnValue = curPage && curPage.uninstall && curPage.uninstall();
+		});
+		$rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+			routeChange && routeChange.apply(routeApp, arguments);
+		});
+		$rootScope.$on('$viewContentLoaded', function(event) {
+			curPage && curPage.install && curPage.install(returnValue);
+			routeChangeAfter && routeChangeAfter.apply(routeApp, arguments);
+		});
+
+		routeApp.$state = $state;
+	}]);
+
 	function install(routes) {
 		routeApp.module.config(['$stateProvider', '$urlRouterProvider',
 			function($stateProvider, $urlRouterProvider) {
 			setRoutes($stateProvider, $urlRouterProvider, routes);
 		}]);
+		return routeApp;
 	}
 
 	function changeBefore(callback) {
 		routeChangeBefore = callback;
+		return routeApp;
 	}
 
 	function change(callback) {
 		routeChange = callback;
+		return routeApp;
 	}
 
 	function changeAfter(callback) {
 		routeChangeAfter = callback;
+		return routeApp;
 	}
 
 	function start(DOM) {
 		DOM = DOM || document;
 		angular.bootstrap(DOM, ['routeApp']);
+		return routeApp;
 	}
 
 	var fileNameReg = new RegExp('[^/]*$'),
