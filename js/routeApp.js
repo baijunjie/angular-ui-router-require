@@ -8,9 +8,10 @@
  *           其中 $state 与 controller 必须在应用启动后才能使用。
  *
  * 属性：
- * - angular  angular 对象的引用。
- * - module   routeApp 的 module 对象引用。
- * - $state   angular-ui-router 的 $state 服务引用。
+ * - angular   angular 对象的引用。
+ * - module    routeApp 的 module 对象引用。
+ * - $state    angular-ui-router 的 $state 服务引用。
+ * - curRoute  路由的当前路线 js 模块的返回值。
  *
  * 方法：
  * - install       安装路由
@@ -65,11 +66,12 @@
 }(this, function(angular) {
 	'use strict';
 
-	var curPage, returnValue,
+	var returnValue,
 		routeChange, routeChangeBefore, routeChangeAfter,
 		routeApp = {
 			angular: angular,
 			module: angular.module('routeApp', ['ui.router']),
+			curRoute: null,
 			install: install,
 			start: start,
 			change: change,
@@ -87,13 +89,15 @@
 	routeApp.module.run(['$rootScope', '$state', function($rootScope, $state) {
 		$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
 			routeChangeBefore && routeChangeBefore.apply(routeApp, arguments);
-			returnValue = curPage && curPage.uninstall && curPage.uninstall();
+			var curRoute = routeApp.curRoute;
+			returnValue = curRoute && curRoute.uninstall && curRoute.uninstall();
 		});
 		$rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
 			routeChange && routeChange.apply(routeApp, arguments);
 		});
 		$rootScope.$on('$viewContentLoaded', function(event) {
-			curPage && curPage.install && curPage.install(returnValue);
+			var curRoute = routeApp.curRoute;
+			curRoute && curRoute.install && curRoute.install(returnValue);
 			routeChangeAfter && routeChangeAfter.apply(routeApp, arguments);
 		});
 
@@ -154,8 +158,8 @@
 				if (route.hasjs !== false) {
 					state.resolve = ['$q', function($q) {
 						var defer = $q.defer();
-						require([route.component + '/' + fileName + '.js'], function(page) {
-							curPage = page;
+						require([route.component + '/' + fileName + '.js'], function(routeModule) {
+							routeApp.curRoute = routeModule;
 							defer.resolve();
 						}, function(err) {
 							defer.resolve();
