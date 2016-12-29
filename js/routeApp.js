@@ -96,12 +96,13 @@
 			routeChange && routeChange.apply(routeApp, arguments);
 		});
 		$rootScope.$on('$viewContentLoaded', function(event) {
+			var args = arguments;
 			// 有时 angular 的第三方插件渲染会在这之后完成
 			// 因此，这里采用异步，确保这些 angular 插件渲染完成后再执行安装
 			setTimeout(function() {
 				var curRoute = routeApp.curRoute;
 				curRoute && curRoute.install && curRoute.install(returnValue);
-				routeChangeAfter && routeChangeAfter.apply(routeApp, arguments);
+				routeChangeAfter && routeChangeAfter.apply(routeApp, args);
 			});
 		});
 
