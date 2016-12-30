@@ -68,6 +68,7 @@
 
 	i18n.module.config(['$translateProvider', function($translateProvider) {
 		$translateProvider.preferredLanguage(defLangType);
+		$translateProvider.useSanitizeValueStrategy(null); // 消除插件自带的警告，插件要求必须明确设置。
 		i18n.$translateProvider = $translateProvider;
 
 		for (var langType in language) {
