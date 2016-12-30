@@ -12,8 +12,9 @@
  * - $translateProvider  angular-translate 的 $translateProvider 服务引用。
  *
  * 方法：
- * - getLang             获取当前语言类型的对应值。
+ * - getLang             获取当前语言。
  * - getAllLang          获取全部语言对象。
+ * - setAllLang          设置全部语言对象。
  * - getLangType         获取当前语言类型。
  * - setLangType         设置当前语言类型。（必须应用启动后才可以使用）
  * - setDefLangType      设置默认语言类型。（只能在应用启动前设置）
@@ -38,7 +39,7 @@
 
 	var requireLangDoneCallback, requireLangFailCallback,
 		language = {},
-		defLangType = 'CN',
+		defLangType = 'zh-CN',
 		curLangType = '',
 		q = null,
 		ajax = null,
@@ -62,22 +63,59 @@
 		q = $q;
 		ajax = $http;
 		i18n.$translate = $translate;
-		httpOptions.url && i18n.setLangType(defLangType);
+		(language[defLangType] || httpOptions.url) && i18n.setLangType(defLangType);
 	}]);
 
 	i18n.module.config(['$translateProvider', function($translateProvider) {
 		$translateProvider.preferredLanguage(defLangType);
 		i18n.$translateProvider = $translateProvider;
+
+		for (var langType in language) {
+			$translateProvider.translations(langType, language[langType]);
+		}
 	}]);
 
 	/**
+	 * 获取当前语言
+	 * @param  {String}            key 可选。传入语言 key
+	 * @return {String|Object}         返回当前语言类型下 key 的对应值。如果没有传参，则返回当前语言对象。
+	 */
+	function getLang(key) {
+		return key === undefined ? language[curLangType] : language[curLangType][key];
+	}
+
+	/**
+	 * 获取全部语言对象
+	 * @return {Object} language 对象
+	 */
+	function getAllLang() {
+		return angular.extend({}, language);
+	}
+
+	/**
+	 * 设置全部语言对象
+	 * @param {Object} lang  语言对象，key 对应语言类型，value 表示语言类型对应的语言字典对象。
+	 */
+	function setAllLang(lang) {
+		angular.extend(language, lang);
+		return i18n;
+	}
+
+	/**
+	 * 获取当前语言类型
+	 * @return {String} 返回当前语言类型
+	 */
+	function getLangType() {
+		return curLangType;
+	}
+
+	/**
 	 * 设置当前语言类型（必须应用启动后才可以使用）
-	 * @param {String}        langType 需要设置的当前语言类型
-	 * @param {String|Object} options  可选。新语言的 http 请求配置，包含 url 与 data 等。如果传入字符串，则表示 url。
+	 * @param  {String}        langType 需要设置的当前语言类型
+	 * @param  {String|Object} options  可选。新语言的 http 请求配置，包含 url 与 data 等。如果传入字符串，则表示 url。
+	 * @return {Promise}                返回一个 Promise 对象。Promise 对象 resolve 时，表示语言设置成功。
 	 */
 	function setLangType(langType, options) {
-		langType = langType.toUpperCase();
-
 		var defer = q.defer();
 
 		if (langType === curLangType) {
@@ -87,8 +125,7 @@
 
 		if (language[langType]) {
 			curLangType = langType;
-			i18n.$translate.use(curLangType);
-			defer.resolve();
+			i18n.$translate.use(curLangType).then(defer.resolve);
 		} else {
 			var type = typeof options;
 
@@ -106,10 +143,8 @@
 						language[langType] = response.data;
 						i18n.$translateProvider.translations(langType, response.data);
 						curLangType = langType;
-						i18n.$translate.use(curLangType);
-
 						requireLangDoneCallback && requireLangDoneCallback.apply(i18n, arguments);
-						defer.resolve();
+						i18n.$translate.use(curLangType).then(defer.resolve);
 					} else {
 						requireLangFailCallback && requireLangFailCallback.apply(i18n, arguments);
 						defer.reject();
@@ -124,36 +159,11 @@
 	}
 
 	/**
-	 * 获取当前语言类型
-	 * @return {String]} 返回当前语言类型
-	 */
-	function getLangType() {
-		return curLangType;
-	}
-
-	/**
-	 * 根据 key 获取当前语言类型的对应值
-	 * @param  {String} key 语言 key
-	 * @return {String}     返回当前语言类型下 key 的对应值
-	 */
-	function getLang(key) {
-		return language[curLangType][key];
-	}
-
-	/**
-	 * 获取全部语言对象
-	 * @return {Object]} language 对象
-	 */
-	function getAllLang() {
-		return angular.extend({}, language);
-	}
-
-	/**
-	 * 设置默认语言类型。只能在应用启动前设置，如果应用启动前未设置，则默认语言将被设置为 'CN'
-	 * @param {String} langType 语言 key，如：'CN'、'EN'
+	 * 设置默认语言类型。只能在应用启动前设置，如果应用启动前未设置，则默认语言将被设置为 'zh-CN'
+	 * @param {String} langType 语言 key，如：'zh-CN'、'en-US'
 	 */
 	function setDefLangType(langType) {
-		defLangType = langType.toUpperCase();
+		defLangType = langType;
 		return i18n;
 	}
 

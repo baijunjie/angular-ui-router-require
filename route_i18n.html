@@ -105,14 +105,14 @@ require(['routeApp', 'i18n'], function(routeApp, i18n) {
 	routeApp.install(routes);
 	routeApp.start();
 
-	i18n.setLangType('CN', 'data/i18n/CN.json')
+	i18n.setLangType('zh-CN', 'data/i18n/zh-CN.json')
 		.then(function() {
 			console.log(i18n.getLang('WELCOME'));
+			alert('5 秒后切换英语');
 		});
 
-	console.log('5 秒后切换英语');
 	setTimeout(function() {
-		i18n.setLangType('EN', 'data/i18n/EN.json')
+		i18n.setLangType('en-US', 'data/i18n/en-US.json')
 			.then(function() {
 				console.log(i18n.getLang('WELCOME'));
 			});
