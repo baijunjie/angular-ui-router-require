@@ -113,7 +113,7 @@
 	 * 设置当前语言类型（必须应用启动后才可以使用）
 	 * @param  {String}        langType 需要设置的当前语言类型
 	 * @param  {String|Object} options  可选。新语言的 http 请求配置，包含 url 与 data 等。如果传入字符串，则表示 url。
-	 * @return {Promise}                返回一个 Promise 对象。Promise 对象 resolve 时，表示语言设置成功。
+	 * @return {Promise}                返回一个 Promise 对象。Promise 对象 resolve 时，表示语言设置成功，并会将当前语言类型作为参数传入。
 	 */
 	function setLangType(langType, options) {
 		var defer = q.defer();
