@@ -120,7 +120,7 @@
 	 * @return {Object}           返回当前语言类型对应的语言对象。如果没有传参，则返回包含所有语言对象的集合。
 	 */
 	function getAllLang(langType) {
-		return langType === undefined ? angular.copy(langSet) : angular.copy(langSet[langType]);
+		return langType === undefined ? angular.copy(langSet) : angular.copy(langSet[langType.toUpperCase()]);
 	}
 
 	/**
@@ -130,16 +130,21 @@
 	 */
 	function setAllLang(langType, langDict) {
 
-		var newLangSet;
+		var newLangSet,
+			upperCaseLangType;
 		if (typeof langType === 'object') {
 			newLangSet = langType;
-		} else {
+		} else if (typeof langType === 'string') {
+			upperCaseLangType = langType.toUpperCase();
 			newLangSet = {};
-			newLangSet[langType] = langDict;
+			newLangSet[upperCaseLangType] = langDict;
+		} else {
+			return i18n;
 		}
 
 		for (langType in newLangSet) {
-			langSet[langType] = angular.extend({}, langSet[langType], newLangSet[langType]);
+			upperCaseLangType = langType.toUpperCase();
+			langSet[upperCaseLangType] = angular.extend({}, langSet[upperCaseLangType], newLangSet[langType]);
 		}
 
 		if (i18n.$translateProvider) {
@@ -168,6 +173,8 @@
 	 * @return {Promise}                返回一个 Promise 对象。Promise 对象 resolve 时，表示语言设置成功，并会将当前语言类型作为参数传入。
 	 */
 	function setLangType(langType, options) {
+		langType = langType.toUpperCase();
+
 		var defer = q.defer();
 
 		if (langType === curLangType) {
@@ -215,7 +222,7 @@
 	 * @param {String} langType 语言类型，如：'zh-CN'、'en-US'
 	 */
 	function setDefLangType(langType) {
-		defLangType = langType;
+		defLangType = langType.toUpperCase();
 		return i18n;
 	}
 
