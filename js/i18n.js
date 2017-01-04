@@ -62,13 +62,6 @@
 			requireLangFail: requireLangFail
 		};
 
-	i18n.module.run(['$translate', '$http', '$q', function($translate, $http, $q) {
-		q = $q;
-		ajax = $http;
-		i18n.$translate = $translate;
-		(langSet[defLangType] || httpOptions.url) && i18n.setLangType(defLangType);
-	}]);
-
 	i18n.module.config(['$translateProvider', function($translateProvider) {
 		$translateProvider.preferredLanguage(defLangType);
 		$translateProvider.useSanitizeValueStrategy(null); // 消除插件自带的警告，插件要求必须明确设置。
@@ -77,6 +70,13 @@
 		for (var langType in langSet) {
 			$translateProvider.translations(langType, langSet[langType]);
 		}
+	}]);
+
+	i18n.module.run(['$translate', '$http', '$q', function($translate, $http, $q) {
+		q = $q;
+		ajax = $http;
+		i18n.$translate = $translate;
+		(langSet[defLangType] || httpOptions.url) && i18n.setLangType(defLangType);
 	}]);
 
 	/**
