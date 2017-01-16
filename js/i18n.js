@@ -344,27 +344,27 @@
 	function config(config) {
 		if (!config) return i18n;
 
-		extend(true, cfg, config);
+		extend(cfg, {
+			caseSensitive: config.caseSensitive
+		});
 
-		var langType,
-			caseLangType,
-			paths = cfg.paths,
-			defLangType = cfg.defLangType,
-			caseSensitive = cfg.caseSensitive;
+		if (!cfg.caseSensitive) {
+			var langType,
+				paths = config.paths;
 
-		if (paths) {
-			for (langType in paths) {
-				caseLangType = caseSensitive ? langType : langType.toUpperCase();
-				if (caseLangType !== langType) {
-					paths[caseLangType] = paths[langType];
-					delete paths[langType];
+			if (paths) {
+				config.paths = {};
+				for (langType in paths) {
+					config.paths[langType.toUpperCase()] = paths[langType];
 				}
+			}
+
+			if (config.defLangType) {
+				config.defLangType = config.defLangType.toUpperCase();
 			}
 		}
 
-		if (!caseSensitive) {
-			config.defLangType = defLangType.toUpperCase();
-		}
+		extend(true, cfg, config);
 
 		return i18n;
 	}
