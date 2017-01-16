@@ -58,7 +58,10 @@
 			http: {},
 
 			// 默认语言类型。如果 paths 中配置了该语言类型，会在应用启动后立即设置
-			defLangType: ''
+			defLangType: '',
+
+			// 语言类型是否大小写敏感
+			caseSensitive: false
 		},
 
 		langSet = {},
@@ -218,7 +221,9 @@
 	 * @return {Object}           返回当前语言类型对应的语言对象。如果没有传参，则返回包含所有语言对象的集合。
 	 */
 	function getAllLang(langType) {
-		return langType === undefined ? angular.copy(langSet) : angular.copy(langSet[langType.toUpperCase()]);
+		return langType === undefined ?
+			angular.copy(langSet) :
+			angular.copy(langSet[cfg.caseSensitive ? langType : langType.toUpperCase()]);
 	}
 
 	/**
@@ -227,22 +232,22 @@
 	 * @param {Object}        langDict  传入语言字典对象。
 	 */
 	function setAllLang(langType, langDict) {
-
 		var newLangSet,
-			upperCaseLangType;
+			caseLangType;
+
 		if (typeof langType === 'object') {
 			newLangSet = langType;
 		} else if (typeof langType === 'string') {
-			upperCaseLangType = langType.toUpperCase();
+			caseLangType = cfg.caseSensitive ? langType : langType.toUpperCase();
 			newLangSet = {};
-			newLangSet[upperCaseLangType] = langDict;
+			newLangSet[caseLangType] = langDict;
 		} else {
 			return i18n;
 		}
 
 		for (langType in newLangSet) {
-			upperCaseLangType = langType.toUpperCase();
-			langSet[upperCaseLangType] = extend({}, langSet[upperCaseLangType], newLangSet[langType]);
+			caseLangType = cfg.caseSensitive ? langType : langType.toUpperCase();
+			langSet[caseLangType] = extend({}, langSet[caseLangType], newLangSet[langType]);
 		}
 
 		if (i18n.$translateProvider) {
@@ -270,7 +275,9 @@
 	 * @return {Promise}                返回一个 Promise 对象。Promise 对象 resolve 时，表示语言设置成功，并会将当前语言类型作为参数传入。
 	 */
 	function setLangType(langType) {
-		langType = langType.toUpperCase();
+		if (!cfg.caseSensitive) {
+			langType = langType.toUpperCase();
+		}
 
 		var defer = q.defer();
 
@@ -337,24 +344,28 @@
 	function config(config) {
 		if (!config) return i18n;
 
+		extend(true, cfg, config);
+
 		var langType,
-			upperCaseLangType,
-			paths = config.paths,
-			defLangType = config.defLangType;
+			caseLangType,
+			paths = cfg.paths,
+			defLangType = cfg.defLangType,
+			caseSensitive = cfg.caseSensitive;
 
 		if (paths) {
 			for (langType in paths) {
-				upperCaseLangType = langType.toUpperCase();
-				paths[upperCaseLangType] = paths[langType];
-				delete paths[langType];
+				caseLangType = caseSensitive ? langType : langType.toUpperCase();
+				if (caseLangType !== langType) {
+					paths[caseLangType] = paths[langType];
+					delete paths[langType];
+				}
 			}
 		}
 
-		if (defLangType) {
+		if (!caseSensitive) {
 			config.defLangType = defLangType.toUpperCase();
 		}
 
-		extend(true, cfg, config);
 		return i18n;
 	}
 
