@@ -124,11 +124,16 @@ require(['routeApp'], function(routeApp) {
 
 - `install` - 安装路由。
 - `start` - 启动应用。可以传入一个 DOM 元素，表示应用的挂在对象。默认为 document。
-- `changeBefore` - 传入一个 `Function`，注册路的 `changeBefore` 回调，对应 angular-ui-router 的 `$stateChangeStart` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
-- `change` - 传入一个 `Function`，注册路由的 `change` 回调，对应 angular-ui-router 的 `$stateChangeSuccess` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
-- `changeAfter` - 传入一个 `Function`，注册路由的 `changeAfter` 回调，对应 angular-ui-router 的 `$viewContentLoaded` 事件。回调参数为 `event`。
+- `on` - 注册事件监听。
+- `off` - 移除事件监听。
 - `controller` - 用于注册组件的 `controller` 控制器。实际上调用的是 `$controllerProvider.register`。
 
+
+#### 事件：
+
+- `changeBefore` - 注册路的 `changeBefore` 监听，对应 angular-ui-router 的 `$stateChangeStart` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
+- `change` - 注册路由的 `change` 监听，对应 angular-ui-router 的 `$stateChangeSuccess` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
+- `changeAfter` - 注册路由的 `changeAfter` 监听，对应 angular-ui-router 的 `$viewContentLoaded` 事件。回调参数为 `event`。
 
 ## 路由组件的生命周期
 

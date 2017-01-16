@@ -3,7 +3,7 @@ define(['routeApp'], function(routeApp) {
 
 	routeApp.controller('fooCtrl', function($scope, $stateParams) {
 		// controller 内部在页面每次载入时也会执行
-		$scope.name = '我是 foo';
+		$scope.name = 'foo';
 		console.log('fooCtrl 执行');
 	});
 

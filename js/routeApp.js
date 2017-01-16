@@ -1,5 +1,5 @@
 /**
- * Angular 1.X 组件化路由按需加载实现 v0.1.5
+ * Angular 1.X 组件化路由按需加载实现 v0.2.0
  * @author BaiJunjie
  *
  * https://github.com/baijunjie/angular-ui-router-require
@@ -14,29 +14,34 @@
  * - $state    angular-ui-router 的 $state 服务引用。
  *
  * 方法：
- * - install       安装路由
- *                 install([{
- *                     name: 'foo', // 路由链接的 ui-sref，同时也是路由的 state 名称。
- *                     component: 'page/foo', // 组件（文件夹）路径。
- *                     hasjs: false, // 可选。布尔值，明确指出组件是否包含 js，默认为 true。
- *                     text: 'Go to Foo', // 可选。路由文本。路由生成后可以在路由的 state 对象上访问到。
- *                     path: '/foo', // 可选。在浏览器地址栏显示的路径，同时也是生成链接的真实 href。默认情况下等于 name。
- *                     from: '/^\/foo\//i', // 可选。字符串或者正则表达式，所有匹配的路径都会重定向到该页面。默认为空。
- *                                          // '*' 表示其余 url 都重定向到该页面。
- *                                          // '/path/*' 表示与星号之前路径匹配的所有 url 都会重定向到该页面。
- *                     children: [ ... ], // 可选。子路由数组
- *                 }, ... ])
+ * - install     安装路由
+ *               install([{
+ *                   name: 'foo', // 路由链接的 ui-sref，同时也是路由的 state 名称。
+ *                   component: 'page/foo', // 组件（文件夹）路径。
+ *                   hasjs: false, // 可选。布尔值，明确指出组件是否包含 js，默认为 true。
+ *                   text: 'Go to Foo', // 可选。路由文本。路由生成后可以在路由的 state 对象上访问到。
+ *                   path: '/foo', // 可选。在浏览器地址栏显示的路径，同时也是生成链接的真实 href。默认情况下等于 name。
+ *                   from: '/^\/foo\//i', // 可选。字符串或者正则表达式，所有匹配的路径都会重定向到该页面。默认为空。
+ *                                        // '*' 表示其余 url 都重定向到该页面。
+ *                                        // '/path/*' 表示与星号之前路径匹配的所有 url 都会重定向到该页面。
+ *                   children: [ ... ], // 可选。子路由数组
+ *               }, ... ])
  *
- * - start         启动应用。可以传入一个 DOM 元素，表示应用的挂在对象。默认为 document。
+ * - start       启动应用。可以传入一个 DOM 元素，表示应用的挂在对象。默认为 document。
  *
- * - changeBefore  传入一个 Function，注册路的 changeBefore 回调，对应 angular-ui-router 的 $stateChangeStart 事件。
- *                 回调参数分别为 event, toState, toParams, fromState, fromParams。
- * - change        传入一个 Function，注册路由的 change 回调，对应 angular-ui-router 的 $stateChangeSuccess 事件。
- *                 回调参数分别为 event, toState, toParams, fromState, fromParams。
- * - changeAfter   传入一个 Function，注册路由的 changeAfter 回调，对应 angular-ui-router 的 $viewContentLoaded 事件。
- *                 回调参数为 event。
+ * - on          注册事件监听。
  *
- * - controller    用于注册组件的 controller 控制器。实际上调用的是 $controllerProvider.register。
+ * - off         移除事件监听。
+ *
+ * - controller  用于注册组件的 controller 控制器。实际上调用的是 $controllerProvider.register。
+ *
+ * 事件：
+ * - changeBefore   注册路由的 changeBefore 监听，对应 angular-ui-router 的 $stateChangeStart 事件。
+ *                  回调参数分别为 event, toState, toParams, fromState, fromParams。
+ * - change         注册路由的 change 监听，对应 angular-ui-router 的 $stateChangeSuccess 事件。
+ *                  回调参数分别为 event, toState, toParams, fromState, fromParams。
+ * - changeAfter    注册路由的 changeAfter 监听，对应 angular-ui-router 的 $viewContentLoaded 事件。
+ *                  回调参数为 event。
  *
  * 所有的路由组件都是一个文件夹，文件夹中包含与组件同名的 html 和 js。
  * 每个 js 以 AMD 的规范定义成模块，并输出一个包含 install 与 uninstall 的对象，用于安装和卸载。
@@ -67,16 +72,19 @@
 	'use strict';
 
 	var returnValue,
-		routeChange, routeChangeBefore, routeChangeAfter,
+		callbackSet = {
+			'changeBefore': [],
+			'change': [],
+			'changeAfter': []
+		},
 		routeApp = {
 			angular: angular,
 			module: angular.module('routeApp', ['ui.router']),
 			curRoute: null,
 			install: install,
 			start: start,
-			change: change,
-			changeBefore: changeBefore,
-			changeAfter: changeAfter
+			on: on,
+			off: off
 		};
 
 	routeApp.module.config(['$controllerProvider', function($controllerProvider) {
@@ -88,12 +96,18 @@
 
 	routeApp.module.run(['$rootScope', '$state', function($rootScope, $state) {
 		$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
-			routeChangeBefore && routeChangeBefore.apply(routeApp, arguments);
-			var curRoute = routeApp.curRoute;
+			var arg = arguments,
+				curRoute = routeApp.curRoute;
+			angular.forEach(callbackSet['changeBefore'], function(cb) {
+				cb.apply(routeApp, arg);
+			});
 			returnValue = curRoute && curRoute.uninstall && curRoute.uninstall();
 		});
 		$rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-			routeChange && routeChange.apply(routeApp, arguments);
+			var arg = arguments;
+			angular.forEach(callbackSet['change'], function(cb) {
+				cb.apply(routeApp, arg);
+			});
 		});
 		$rootScope.$on('$viewContentLoaded', function(event) {
 			var args = arguments;
@@ -102,7 +116,9 @@
 			setTimeout(function() {
 				var curRoute = routeApp.curRoute;
 				curRoute && curRoute.install && curRoute.install(returnValue);
-				routeChangeAfter && routeChangeAfter.apply(routeApp, args);
+				angular.forEach(callbackSet['changeAfter'], function(cb) {
+					cb.apply(routeApp, arg);
+				});
 			});
 		});
 
@@ -118,17 +134,90 @@
 	}
 
 	function changeBefore(callback) {
-		routeChangeBefore = callback;
-		return routeApp;
+		if (typeof callback === 'function' && routeChangeBefore.indexOf(callback) < 0) {
+			routeChangeBefore.push(callback);
+		}
+		return function() {
+			var index = routeChangeBefore.indexOf(callback);
+			if (index >= 0) {
+				routeChangeBefore.splice(index, 1);
+			}
+		};
 	}
 
-	function change(callback) {
-		routeChange = callback;
-		return routeApp;
+	/**
+	 * 注册事件监听
+	 * @param  {String}             type      事件类型。
+	 * @param  {Function}           callback  事件监听函数。
+ 	 * @return {Function|Undefined}           如果注册成功，则返回一个反注册函数，调用它可以取消监听。
+	 */
+	function on(type, callback) {
+		var cbArr;
+
+		if (callbackSet[type]) {
+			cbArr = callbackSet[type];
+		} else {
+			return;
+		}
+
+		if (typeof callback === 'function' && cbArr.indexOf(callback) < 0) {
+			cbArr.push(callback);
+		}
+
+		return function() {
+			var index = cbArr.indexOf(callback);
+			if (index >= 0) {
+				cbArr.splice(index, 1);
+			}
+		};
 	}
 
-	function changeAfter(callback) {
-		routeChangeAfter = callback;
+	/**
+	 * 移除事件监听
+	 * @param  {String}   type     可选。事件类型。
+	 *                             如果传入一个 Function，则会被当做事件监听函数来处理。
+	 * @param  {Function} callback 可选。事件监听函数。
+	 */
+	function off(type, callback) {
+		var i,
+			cbSet,
+			typeStr = typeof type;
+
+		if (typeStr === 'undefined') {
+			for (i in callbackSet) {
+				callbackSet[i].length = 0;
+			}
+			return routeApp;
+
+		} else if (typeStr === 'function') {
+			callback = type;
+			cbSet = callbackSet;
+
+		} else if (typeStr === 'string') {
+			if (callbackSet[type]) {
+				cbSet = {};
+				cbSet[type] = callbackSet[type];
+			} else {
+				return routeApp;
+			}
+
+			if (callback === undefined) {
+				cbSet[type].length = 0;
+			}
+		} else {
+			return routeApp;
+		}
+
+		var cbArr, index;
+		for (i in cbSet) {
+			cbArr = cbSet[i];
+			index = cbArr.indexOf(callback);
+			if (index >= 0) {
+				cbArr.splice(index, 1);
+				continue;
+			}
+		}
+
 		return routeApp;
 	}
 

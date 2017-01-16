@@ -19,12 +19,23 @@ ul, li {
 	height: 100%;
 }
 .header {
+	position: relative;
 	height: 50px;
 	line-height: 50px;
 	font-size: 20px;
 	text-align: center;
 	color: #fff;
 	background-color: gray;
+}
+.header .language {
+	position: absolute;
+	top: 0;
+	right: 10px;
+	font-size: 14px;
+	color: #fff;
+}
+.header .language a {
+	color: #fff;
 }
 .nav {
 	position: absolute;
@@ -49,7 +60,14 @@ ul, li {
 </head>
 <body ontouchstart ng-controller="mainCtrl">
 
-<div class="header" translate="WELCOME"></div>
+<div class="header">
+	<div translate="WELCOME"></div>
+	<div class="language">
+		<a href="javascript:void(0);" ng-click="changeLang('zh-CN')">中文</a>
+		<span> | </span>
+		<a href="javascript:void(0);" ng-click="changeLang('en-US')">English</a>
+	</div>
+</div>
 
 <div class="nav">
 	<div ng-repeat="n in menus">
@@ -74,19 +92,27 @@ require(['routeApp', 'i18n'], function(routeApp, i18n) {
 
 	routeApp.module.requires.push('i18n');
 
+	i18n.config({
+		paths: {
+			'zh-CN': 'data/i18n/zh-CN.json',
+			'en-US': 'data/i18n/en-US.json'
+		},
+		defLangType: 'zh-CN'
+	});
+
 	var routes = [{
-		text: 'Home',
+		i18n: 'HOME',
 		name: 'home',
 		component: 'page/home',
 		hasjs: false,
 		from: '*'
 	}, {
-		text: 'Go to Foo',
+		i18n: 'GO_TO_FOO',
 		name: 'foo',
 		component: 'page/foo',
 
 		children: [{
-			text: 'Go to Bar',
+			i18n: 'GO_TO_BAR',
 			name: 'bar',
 			path: 'foo/bar',
 			component: 'page/bar',
@@ -96,28 +122,43 @@ require(['routeApp', 'i18n'], function(routeApp, i18n) {
 
 	routeApp.module.controller('mainCtrl', function($scope) {
 		$scope.menus = routes;
+
+		$scope.changeLang = function(langType) {
+			i18n.setLangType(langType);
+		};
+
+		i18n.on('requireLangDone', function(langType) {
+			console.log(langType, '加载完成');
+		});
+
+		i18n.on('requireLangFail', function(langType) {
+			console.log(langType, '加载失败');
+		});
+
+		i18n.on('change', function(langType) {
+			console.log('语言已变更为', langType);
+			changMenuText($scope.menus);
+		});
 	});
 
-	routeApp.change(function(e, toState, toParams, fromState, fromParams) {
+	routeApp.on('change', function(e, toState, toParams, fromState, fromParams) {
 		console.log('从 ' + fromState.name + ' 跳转到 ' + toState.name)
 	});
 
 	routeApp.install(routes);
 	routeApp.start();
 
-	i18n.setLangType('zh-CN', 'data/i18n/zh-CN.json')
-		.then(function() {
-			console.log(i18n.getLang('WELCOME'));
-			alert('5 秒后切换英语');
-		});
-
-	setTimeout(function() {
-		i18n.setLangType('en-US', 'data/i18n/en-US.json')
-			.then(function() {
-				console.log(i18n.getLang('WELCOME'));
-			});
-	}, 5000);
-
+	function changMenuText(arr) {
+		var item,
+			i = arr.length;
+		while (i--) {
+			item = arr[i];
+			item.text = i18n.getLang(item.i18n);
+			if (routeApp.angular.isArray(item.children)) {
+				changMenuText(item.children);
+			}
+		}
+	}
 });
 </script>
 </body>

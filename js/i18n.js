@@ -1,5 +1,5 @@
 /**
- * Angular 1.X 国际化
+ * Angular 1.X 国际化 v0.2.0
  * @author BaiJunjie
  *
  * i18n  是模块返回的对象，包含若干属性与方法。
@@ -18,11 +18,14 @@
  * - setAllLang          设置全部语言对象。
  * - getLangType         获取当前语言类型。
  * - setLangType         设置当前语言类型。（必须应用启动后才可以使用）
- * - setDefLangType      设置默认语言类型。（只能在应用启动前设置）
- * - setHttpOptions      设置 $http 请求的默认配置选项。
- * - requireLangDone     注册请求语言成功的回调。
- * - requireLangFail     注册请求语言失败的回调。
+ * - config              设置配置对象。（只能在应用启动前设置）
+ * - on                  注册事件监听。
+ * - off                 移除事件监听。
  *
+ * 事件：
+ * - requireLangDone  新语言包加载完成时触发该事件，并将该语言类型作为参数传入。
+ * - requireLangFail  新语言包加载失败时触发该事件，并将该语言类型作为参数传入。
+ * - change           语言变更后触发该事件，并将当前语言类型作为参数传入。
  */
 (function(root, factory) {
 	'use strict';
@@ -38,15 +41,30 @@
 }(this, function(angular) {
 	'use strict';
 
-	var requireLangDoneCallback, requireLangFailCallback,
+	var callbackSet = {
+			'requireLangDone': [],
+			'requireLangFail': [],
+			'change': []
+		},
+
+		cfg = {
+			// paths 语言包路径配置对象
+			// {
+			//     'zh-CN': 'language/zh-CN.json'
+			// }
+			paths: {},
+
+			// 设置 $http 请求的默认配置选项。
+			http: {},
+
+			// 默认语言类型。如果 paths 中配置了该语言类型，会在应用启动后立即设置
+			defLangType: ''
+		},
+
 		langSet = {},
-		defLangType = 'zh-CN',
 		curLangType = '',
 		q = null,
 		ajax = null,
-		httpOptions = {
-			method: 'GET'
-		},
 		i18n = {
 			angular: angular,
 			module: angular.module('i18n', ['pascalprecht.translate']),
@@ -56,14 +74,20 @@
 			setAllLang: setAllLang,
 			getLangType: getLangType,
 			setLangType: setLangType,
-			setDefLangType: setDefLangType,
-			setHttpOptions: setHttpOptions,
-			requireLangDone: requireLangDone,
-			requireLangFail: requireLangFail
+			config: config,
+			on: on,
+			off: off
 		};
 
+	i18n.config({
+		http: {
+			method: 'GET'
+		},
+		defLangType: 'zh-CN'
+	});
+
 	i18n.module.config(['$translateProvider', function($translateProvider) {
-		$translateProvider.preferredLanguage(defLangType);
+		$translateProvider.preferredLanguage(cfg.defLangType);
 		$translateProvider.useSanitizeValueStrategy(null); // 消除插件自带的警告，插件要求必须明确设置。
 		i18n.$translateProvider = $translateProvider;
 
@@ -76,8 +100,82 @@
 		q = $q;
 		ajax = $http;
 		i18n.$translate = $translate;
-		(langSet[defLangType] || httpOptions.url) && i18n.setLangType(defLangType);
+		if (langSet[cfg.defLangType] || cfg.paths[cfg.defLangType]) {
+			i18n.setLangType(cfg.defLangType);
+		}
 	}]);
+
+	function extend() {
+		var options, name, src, copy, copyIsArray, clone,
+			target = arguments[0] || {},
+			targetType = typeof target,
+			toString = Object.prototype.toString,
+			i = 1,
+			length = arguments.length,
+			deep = false;
+
+		// 处理深拷贝
+		if (targetType === 'boolean') {
+			deep = target;
+
+			// Skip the boolean and the target
+			target = arguments[i] || {};
+			targetType = typeof target;
+			i++;
+		}
+
+		// Handle case when target is a string or something (possible in deep copy)
+		if (targetType !== 'object' && targetType !== 'function') {
+			target = {};
+		}
+
+		// 如果没有合并的对象，则表示 target 为合并对象，将 target 合并给当前函数的持有者
+		if (i === length) {
+			target = this;
+			i--;
+		}
+
+		for (; i < length; i++) {
+
+			// Only deal with non-null/undefined values
+			if ((options = arguments[i]) != null) {
+
+				// Extend the base object
+				for (name in options) {
+					src = target[name];
+					copy = options[name];
+
+					// 防止死循环
+					if (target === copy) {
+						continue;
+					}
+
+					// 深拷贝对象或者数组
+					if (deep && copy &&
+						(copyIsArray = toString.call(copy) === '[object Array]') ||
+						(toString.call(copy) === '[object Object]')) {
+
+						if (copyIsArray) {
+							copyIsArray = false;
+							src = src && (toString.call(src) === '[object Array]') ? src : [];
+
+						} else {
+							src = src && (toString.call(src) === '[object Object]') ? src : {};
+						}
+
+						target[name] = extend(deep, src, copy);
+
+
+					} else if (copy !== undefined) { // 仅忽略未定义的值
+						target[name] = copy;
+					}
+				}
+			}
+		}
+
+		// Return the modified object
+		return target;
+	}
 
 	/**
 	 * 获取当前语言
@@ -104,7 +202,7 @@
 			langDict[key] = value;
 		}
 
-		langSet[curLangType] = angular.extend({}, langSet[curLangType], langDict);
+		langSet[curLangType] = extend({}, langSet[curLangType], langDict);
 
 		if (i18n.$translateProvider) {
 			i18n.$translateProvider.translations(curLangType, langSet[curLangType]);
@@ -144,7 +242,7 @@
 
 		for (langType in newLangSet) {
 			upperCaseLangType = langType.toUpperCase();
-			langSet[upperCaseLangType] = angular.extend({}, langSet[upperCaseLangType], newLangSet[langType]);
+			langSet[upperCaseLangType] = extend({}, langSet[upperCaseLangType], newLangSet[langType]);
 		}
 
 		if (i18n.$translateProvider) {
@@ -169,13 +267,18 @@
 	/**
 	 * 设置当前语言类型（必须应用启动后才可以使用）
 	 * @param  {String}        langType 需要设置的当前语言类型
-	 * @param  {String|Object} options  可选。新语言的 http 请求配置，包含 url 与 data 等。如果传入字符串，则表示 url。
 	 * @return {Promise}                返回一个 Promise 对象。Promise 对象 resolve 时，表示语言设置成功，并会将当前语言类型作为参数传入。
 	 */
-	function setLangType(langType, options) {
+	function setLangType(langType) {
 		langType = langType.toUpperCase();
 
 		var defer = q.defer();
+
+		defer.promise.then(function() {
+			angular.forEach(callbackSet['change'], function(cb) {
+				cb.call(i18n, langType);
+			});
+		});
 
 		if (langType === curLangType) {
 			defer.resolve();
@@ -184,17 +287,14 @@
 
 		if (langSet[langType]) {
 			curLangType = langType;
-			i18n.$translate.use(curLangType).then(defer.resolve);
-		} else {
-			var type = typeof options;
-
-			if (type === 'string') {
-				options = { url: options }
-			} else if (type === 'object') {
-				options = angular.extend({}, httpOptions, options);
-			} else {
-				options = httpOptions;
-			}
+			i18n.$translate.use(curLangType).then(function() {
+				// 待语言渲染完成后触发
+				setTimeout(function() {
+					defer.resolve();
+				});
+			});
+		} else if (cfg.paths[langType]) {
+			var options = extend(true, {}, cfg.http, { url: cfg.paths[langType] });
 
 			ajax(options)
 				.then(function(response) {
@@ -202,54 +302,135 @@
 						langSet[langType] = response.data;
 						i18n.$translateProvider.translations(langType, response.data);
 						curLangType = langType;
-						requireLangDoneCallback && requireLangDoneCallback.apply(i18n, arguments);
-						i18n.$translate.use(curLangType).then(defer.resolve);
+						angular.forEach(callbackSet['requireLangDone'], function(cb) {
+							cb.call(i18n, langType);
+						});
+						i18n.$translate.use(curLangType).then(function() {
+							// 待语言渲染完成后触发
+							setTimeout(function() {
+								defer.resolve();
+							});
+						});
 					} else {
-						requireLangFailCallback && requireLangFailCallback.apply(i18n, arguments);
+						angular.forEach(callbackSet['requireLangFail'], function(cb) {
+							cb.call(i18n, langType);
+						});
 						defer.reject();
 					}
 				}, function() {
-					requireLangFailCallback && requireLangFailCallback.apply(i18n, arguments);
+					angular.forEach(callbackSet['requireLangFail'], function(cb) {
+						cb.call(i18n, langType);
+					});
 					defer.reject();
 				});
+		} else {
+			defer.reject();
 		}
 
 		return defer.promise;
 	}
 
 	/**
-	 * 设置默认语言类型。只能在应用启动前设置，如果应用启动前未设置，则默认语言将被设置为 'zh-CN'
-	 * @param {String} langType 语言类型，如：'zh-CN'、'en-US'
+	 * 设置配置对象
+	 * @param {Object} config 配置对象
 	 */
-	function setDefLangType(langType) {
-		defLangType = langType.toUpperCase();
+	function config(config) {
+		if (!config) return i18n;
+
+		var langType,
+			upperCaseLangType,
+			paths = config.paths,
+			defLangType = config.defLangType;
+
+		if (paths) {
+			for (langType in paths) {
+				upperCaseLangType = langType.toUpperCase();
+				paths[upperCaseLangType] = paths[langType];
+				delete paths[langType];
+			}
+		}
+
+		if (defLangType) {
+			config.defLangType = defLangType.toUpperCase();
+		}
+
+		extend(true, cfg, config);
 		return i18n;
 	}
 
 	/**
-	 * 设置 $http 请求的默认配置选项
-	 * @param {Object} options $http 的配置对象
+	 * 注册事件监听
+	 * @param  {String}             type      事件类型。
+	 * @param  {Function}           callback  事件监听函数。
+ 	 * @return {Function|Undefined}           如果注册成功，则返回一个反注册函数，调用它可以取消监听。
 	 */
-	function setHttpOptions(options) {
-		angular.extend(httpOptions, options);
-		return i18n;
+	function on(type, callback) {
+		var cbArr;
+
+		if (callbackSet[type]) {
+			cbArr = callbackSet[type];
+		} else {
+			return;
+		}
+
+		if (typeof callback === 'function' && cbArr.indexOf(callback) < 0) {
+			cbArr.push(callback);
+		}
+
+		return function() {
+			var index = cbArr.indexOf(callback);
+			if (index >= 0) {
+				cbArr.splice(index, 1);
+			}
+		};
 	}
 
 	/**
-	 * 注册请求语言成功的回调
-	 * @param  {Function} callback 请求语言成功的回调
+	 * 移除事件监听
+	 * @param  {String}   type     可选。事件类型。
+	 *                             如果传入一个 Function，则会被当做事件监听函数来处理。
+	 * @param  {Function} callback 可选。事件监听函数。
 	 */
-	function requireLangDone(callback) {
-		requireLangDoneCallback = callback;
-		return i18n;
-	}
+	function off(type, callback) {
+		var i,
+			cbSet,
+			typeStr = typeof type;
 
-	/**
-	 * 注册请求语言失败的回调
-	 * @param  {Function} callback 请求语言失的回调
-	 */
-	function requireLangFail(callback) {
-		requireLangFailCallback = callback;
+		if (typeStr === 'undefined') {
+			for (i in callbackSet) {
+				callbackSet[i].length = 0;
+			}
+			return i18n;
+
+		} else if (typeStr === 'function') {
+			callback = type;
+			cbSet = callbackSet;
+
+		} else if (typeStr === 'string') {
+			if (callbackSet[type]) {
+				cbSet = {};
+				cbSet[type] = callbackSet[type];
+			} else {
+				return i18n;
+			}
+
+			if (callback === undefined) {
+				cbSet[type].length = 0;
+			}
+		} else {
+			return i18n;
+		}
+
+		var cbArr, index;
+		for (i in cbSet) {
+			cbArr = cbSet[i];
+			index = cbArr.indexOf(callback);
+			if (index >= 0) {
+				cbArr.splice(index, 1);
+				continue;
+			}
+		}
+
 		return i18n;
 	}
 

@@ -1,3 +1,7 @@
 {
-	"WELCOME": "Welcome"
+	"WELCOME": "Welcome",
+	"HOME": "Home",
+	"GO_TO_FOO": "Go to Foo",
+	"GO_TO_BAR": "Go to Bar",
+	"I_AM": "I am"
 }

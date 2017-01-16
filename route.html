@@ -99,7 +99,7 @@ require(['routeApp'], function(routeApp) {
 			$scope.menus = routes;
 		});
 
-		routeApp.change(function(e, toState, toParams, fromState, fromParams) {
+		routeApp.on('change', function(e, toState, toParams, fromState, fromParams) {
 			console.log('从 ' + fromState.name + ' 跳转到 ' + toState.name)
 		});
 
