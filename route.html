@@ -19,12 +19,23 @@ ul, li {
 	height: 100%;
 }
 .header {
+	position: relative;
 	height: 50px;
 	line-height: 50px;
 	font-size: 20px;
 	text-align: center;
 	color: #fff;
 	background-color: gray;
+}
+.header .language {
+	position: absolute;
+	top: 0;
+	right: 10px;
+	font-size: 14px;
+	color: #fff;
+}
+.header .language a {
+	color: #fff;
 }
 .nav {
 	position: absolute;
@@ -49,7 +60,14 @@ ul, li {
 </head>
 <body ontouchstart ng-controller="mainCtrl">
 
-<div class="header">Header</div>
+<div class="header">
+	<div translate="WELCOME"></div>
+	<div class="language">
+		<a href="javascript:void(0);" ng-click="changeLang('zh-CN')">中文</a>
+		<span> | </span>
+		<a href="javascript:void(0);" ng-click="changeLang('en-US')">English</a>
+	</div>
+</div>
 
 <div class="nav">
 	<div ng-repeat="n in menus">
@@ -70,44 +88,77 @@ ul, li {
 <script src="js/lib/require.js"></script>
 <script src="js/require.config.js"></script>
 <script>
-require(['routeApp'], function(routeApp) {
+require(['routeApp', 'i18n'], function(routeApp, i18n) {
 
-	// 模拟异步获取路由配置
-	setTimeout(function() {
+	routeApp.module.requires.push('i18n');
 
-		var routes = [{
-			text: 'Home',
-			name: 'home',
-			component: 'page/home',
-			hasjs: false,
-			from: '*'
-		}, {
-			text: 'Go to Foo',
-			name: 'foo',
-			component: 'page/foo',
+	i18n.config({
+		paths: {
+			'zh-CN': 'data/i18n/zh-CN.json',
+			'en-US': 'data/i18n/en-US.json'
+		},
+		defLangType: 'zh-CN'
+	});
 
-			children: [{
-				text: 'Go to Bar',
-				name: 'bar',
-				path: 'foo/bar',
-				component: 'page/bar',
-				from: '/bar/*'
-			}]
-		}];
+	var routes = [{
+		i18n: 'HOME',
+		name: 'home',
+		component: 'page/home',
+		hasjs: false,
+		from: '*'
+	}, {
+		i18n: 'GO_TO_FOO',
+		name: 'foo',
+		component: 'page/foo',
 
-		routeApp.module.controller('mainCtrl', function($scope) {
-			$scope.menus = routes;
+		children: [{
+			i18n: 'GO_TO_BAR',
+			name: 'bar',
+			path: 'foo/bar',
+			component: 'page/bar',
+			from: '/bar/*'
+		}]
+	}];
+
+	routeApp.module.controller('mainCtrl', function($scope) {
+		$scope.menus = routes;
+
+		$scope.changeLang = function(langType) {
+			i18n.setLangType(langType);
+		};
+
+		i18n.on('requireLangDone', function(langType) {
+			console.log(langType, '加载完成');
 		});
 
-		routeApp.on('change', function(e, toState, toParams, fromState, fromParams) {
-			console.log('从 ' + fromState.name + ' 跳转到 ' + toState.name)
+		i18n.on('requireLangFail', function(langType) {
+			console.log(langType, '加载失败');
 		});
 
-		routeApp.install(routes);
-		routeApp.start();
+		i18n.on('change', function(langType) {
+			console.log('语言已变更为', langType);
+			changMenuText($scope.menus);
+		});
+	});
 
-	}, 1000);
+	routeApp.on('change', function(e, toState, toParams, fromState, fromParams) {
+		console.log('从 ' + fromState.name + ' 跳转到 ' + toState.name)
+	});
 
+	routeApp.install(routes);
+	routeApp.start();
+
+	function changMenuText(arr) {
+		var item,
+			i = arr.length;
+		while (i--) {
+			item = arr[i];
+			item.text = i18n.getLang(item.i18n);
+			if (routeApp.angular.isArray(item.children)) {
+				changMenuText(item.children);
+			}
+		}
+	}
 });
 </script>
 </body>
