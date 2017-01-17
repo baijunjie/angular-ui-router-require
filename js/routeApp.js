@@ -152,13 +152,9 @@
  	 * @return {Function|Undefined}           如果注册成功，则返回一个反注册函数，调用它可以取消监听。
 	 */
 	function on(type, callback) {
-		var cbArr;
+		if (!callbackSet[type]) return;
 
-		if (callbackSet[type]) {
-			cbArr = callbackSet[type];
-		} else {
-			return;
-		}
+		var cbArr = callbackSet[type];
 
 		if (typeof callback === 'function' && cbArr.indexOf(callback) < 0) {
 			cbArr.push(callback);
@@ -214,7 +210,6 @@
 			index = cbArr.indexOf(callback);
 			if (index >= 0) {
 				cbArr.splice(index, 1);
-				continue;
 			}
 		}
 
@@ -243,10 +238,10 @@
 					from = typeof route.from === 'string' && '/' + route.from.replace(urlReg, '') || route.from;
 
 				state = {
-					text: route.text,
 					url: url,
 					templateUrl: route.component + '/' + fileName + '.html',
-					parents: parentRoute || null
+					parents: parentRoute || null,
+					origin: route
 				};
 
 				if (route.hasjs !== false) {
