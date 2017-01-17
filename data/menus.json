@@ -1,0 +1,13 @@
+[{
+	"i18n": "GO_TO_FOO",
+	"name": "foo",
+	"component": "page/foo",
+
+	"children": [{
+		"i18n": "GO_TO_BAR",
+		"name": "bar",
+		"path": "foo/bar",
+		"from": "/bar/*",
+		"component": "page/bar"
+	}]
+}]

@@ -14,6 +14,7 @@ body {
 }
 ul, li {
 	margin: 0;
+	list-style: none;
 }
 #app {
 	height: 100%;
@@ -47,11 +48,33 @@ ul, li {
 	background-color: yellow;
 	text-indent: 2em;
 }
-.body {
+.crumbs {
 	position: absolute;
 	left: 200px;
 	right: 0;
 	top: 50px;
+	height: 30px;
+	line-height: 30px;
+	text-align: right;
+	background-color: #eee;
+}
+.crumbs ul {
+	display: inline-block;
+	padding: 0 20px;
+}
+.crumbs li {
+	display: inline-block;
+}
+.crumbs li:not(:last-child):after {
+	content: '>';
+	color: #999;
+	margin: 0 10px;
+}
+.body {
+	position: absolute;
+	left: 200px;
+	right: 0;
+	top: 80px;
 	bottom: 0;
 	background-color: #fff;
 	overflow: auto;
@@ -70,15 +93,24 @@ ul, li {
 </div>
 
 <div class="nav">
-	<div ng-repeat="n in menus">
-		<a ui-sref="{{ n.name }}" ng-bind="n.text"></a>
+	<div ng-repeat="m in menus">
+		<a ui-sref="{{ m.name }}" ng-bind="m.text"></a>
 
-		<ul ng-if="n.children && n.children.length">
-			<li ng-repeat="m in n.children">
-				<a ui-sref="{{ m.name }}" ng-bind="m.text"></a>
+		<ul ng-if="m.children && m.children.length">
+			<li ng-repeat="n in m.children">
+				<a ui-sref="{{ n.name }}" ng-bind="n.text"></a>
 			</li>
 		</ul>
 	</div>
+</div>
+
+<div class="crumbs">
+	<ul>
+		<li ng-repeat="n in crumbs">
+			<a ng-if="!n.active" ui-sref="{{ n.name }}" ng-bind="n.text"></a>
+			<span ng-if="n.active" ng-bind="n.text"></span>
+		</li>
+	</ul>
 </div>
 
 <div class="body">
@@ -88,7 +120,7 @@ ul, li {
 <script src="js/lib/require.js"></script>
 <script src="js/require.config.js"></script>
 <script>
-require(['routeApp', 'i18n'], function(routeApp, i18n) {
+require(['jquery', 'routeApp', 'i18n'], function($, routeApp, i18n) {
 
 	routeApp.module.requires.push('i18n');
 
@@ -100,64 +132,83 @@ require(['routeApp', 'i18n'], function(routeApp, i18n) {
 		defLangType: 'zh-CN'
 	});
 
-	var routes = [{
-		i18n: 'HOME',
-		name: 'home',
-		component: 'page/home',
-		hasjs: false,
-		from: '*'
-	}, {
-		i18n: 'GO_TO_FOO',
-		name: 'foo',
-		component: 'page/foo',
+	$.getJSON('data/menus.json', function(menus) {
 
-		children: [{
-			i18n: 'GO_TO_BAR',
-			name: 'bar',
-			path: 'foo/bar',
-			component: 'page/bar',
-			from: '/bar/*'
-		}]
-	}];
+		routeApp.module.controller('mainCtrl', function($scope) {
+			// 生成菜单
+			$scope.menus = menus;
 
-	routeApp.module.controller('mainCtrl', function($scope) {
-		$scope.menus = routes;
+			// 国际化
+			$scope.changeLang = function(langType) {
+				if (langType.toUpperCase() === i18n.getLangType()) return;
 
-		$scope.changeLang = function(langType) {
-			i18n.setLangType(langType);
-		};
+				i18n.setLangType(langType).then(function() {
+					$scope.crumbs = changeCrumbs(routeApp.$state.current);
+				});
+			};
 
-		i18n.on('requireLangDone', function(langType) {
-			console.log(langType, '加载完成');
+			i18n.on('requireLangDone', function(langType) {
+				console.log(langType, '加载完成');
+			});
+
+			i18n.on('requireLangFail', function(langType) {
+				console.log(langType, '加载失败');
+			});
+
+			i18n.on('change', function(langType) {
+				console.log('语言已变更为', langType);
+				changeMenuText(routes);
+			});
+
+			// 面包屑
+			routeApp.on('change', function(e, toState, toParams, fromState, fromParams) {
+				console.log('从 ' + fromState.name + ' 跳转到 ' + toState.name);
+				$scope.crumbs = changeCrumbs(toState);
+			});
 		});
 
-		i18n.on('requireLangFail', function(langType) {
-			console.log(langType, '加载失败');
-		});
+		var routes = [{
+			i18n: 'HOME',
+			name: 'home',
+			component: 'page/home',
+			hasjs: false,
+			from: '*',
 
-		i18n.on('change', function(langType) {
-			console.log('语言已变更为', langType);
-			changMenuText($scope.menus);
-		});
+			children: menus
+		}];
+
+		routeApp.install(routes);
+		routeApp.start();
 	});
 
-	routeApp.on('change', function(e, toState, toParams, fromState, fromParams) {
-		console.log('从 ' + fromState.name + ' 跳转到 ' + toState.name)
-	});
-
-	routeApp.install(routes);
-	routeApp.start();
-
-	function changMenuText(arr) {
+	function changeMenuText(routes) {
 		var item,
-			i = arr.length;
+			i = routes.length;
 		while (i--) {
-			item = arr[i];
+			item = routes[i];
 			item.text = i18n.getLang(item.i18n);
 			if (routeApp.angular.isArray(item.children)) {
-				changMenuText(item.children);
+				changeMenuText(item.children);
 			}
 		}
+	}
+
+	function changeCrumbs(curState) {
+		var state = curState,
+			crumbs = [{
+				text: state.origin.text,
+				name: state.name,
+				active: true
+			}];
+
+		while (state.parents) {
+			state = state.parents;
+			crumbs.unshift({
+				text: state.origin.text,
+				name: state.name
+			});
+		}
+		return crumbs;
 	}
 });
 </script>

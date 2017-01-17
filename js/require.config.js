@@ -1,6 +1,7 @@
 require.config({
 	baseUrl: 'js',
 	paths: {
+		'jquery': 'lib/jquery-3.1.1.min',
 		'angular': 'lib/angular.min',
 		'angular-ui-router': 'lib/angular-ui-router',
 		'angular-translate': 'lib/angular-translate.min',
