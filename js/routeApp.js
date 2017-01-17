@@ -223,8 +223,9 @@
 	}
 
 	var fileNameReg = new RegExp('[^/]*$'),
-		urlReg = new RegExp('^/*'),
-		fromReg = new RegExp('\\*$');
+		slashStartReg = new RegExp('^/+'),
+		slashEndReg = new RegExp('/+$'),
+		starReg = new RegExp('\\*$');
 
 	function setRoutes($stateProvider, $urlRouterProvider, routes, parentRoute) {
 		angular.forEach(routes, function(route) {
@@ -232,20 +233,22 @@
 
 			if (route.component) {
 
-				var fileName = fileNameReg.exec(route.component),
-					stateName = route.name,
-					url = '/' + (route.path || route.name).replace(urlReg, ''),
-					from = typeof route.from === 'string' && '/' + route.from.replace(urlReg, '') || route.from;
+				var url,
+					resolve,
+					fileName = fileNameReg.exec(route.component),
+					from = typeof route.from === 'string' && '/' + route.from.replace(slashStartReg, '') || route.from;
 
-				state = {
-					url: url,
-					templateUrl: route.component + '/' + fileName + '.html',
-					parents: parentRoute || null,
-					origin: route
-				};
+				if (route.path) {
+					url = '/' + route.path.replace(slashStartReg, '');
+				} else {
+					url = '/' + route.name.replace(slashStartReg, '');
+					if (parentRoute) {
+						url = parentRoute.url.replace(slashEndReg, '') + url;
+					}
+				}
 
 				if (route.hasjs !== false) {
-					state.resolve = ['$q', function($q) {
+					resolve = ['$q', function($q) {
 						var defer = $q.defer();
 						require([route.component + '/' + fileName + '.js'], function(routeModule) {
 							routeApp.curRoute = routeModule;
@@ -257,15 +260,23 @@
 					}];
 				}
 
-				$stateProvider.state(stateName, state);
+				state = {
+					url: url,
+					resolve: resolve,
+					templateUrl: route.component + '/' + fileName + '.html',
+					parents: parentRoute || null,
+					origin: route
+				};
+
+				$stateProvider.state(route.name, state);
 
 				if (from) {
 					if (from === '/*') {
 						// from === '/*' 时，表示匹配其余所有 url
 						$urlRouterProvider.otherwise(url);
-					} else if (fromReg.exec(from)) {
+					} else if (starReg.exec(from)) {
 						// from === '/foo/*' 时，星号表示匹配所有开头为 /foo/ 的路径
-						$urlRouterProvider.when(new RegExp('^' + from.replace(fromReg, '')), url);
+						$urlRouterProvider.when(new RegExp('^' + from.replace(starReg, '')), url);
 					} else {
 						// from === '/foo' 时，在路径中 /#!/foo 与 /#!foo 都能识别
 						$urlRouterProvider.when(from, url);
