@@ -168,10 +168,11 @@ require(['jquery', 'routeApp', 'i18n'], function($, routeApp, i18n) {
 
 		var routes = [{
 			i18n: 'HOME',
-			name: '/',
+			name: 'home',
+			path: '/',
+			from: '*',
 			component: 'page/home',
 			hasjs: false,
-			from: '*',
 
 			children: menus
 		}];

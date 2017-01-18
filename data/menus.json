@@ -6,8 +6,6 @@
 	"children": [{
 		"i18n": "GO_TO_BAR",
 		"name": "bar",
-		"path": "foo/bar",
-		"from": "/bar/*",
 		"component": "page/bar"
 	}]
 }]
