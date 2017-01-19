@@ -106,8 +106,8 @@ ul, li {
 <div class="crumbs">
 	<ul>
 		<li ng-repeat="n in crumbs">
-			<a ng-if="!n.active" ui-sref="{{ n.name }}" ng-bind="n.text"></a>
-			<span ng-if="n.active" ng-bind="n.text"></span>
+			<a ng-if="!n.active" ui-sref="{{ n.state.name }}" ng-bind="n.state.origin.text"></a>
+			<span ng-if="n.active" ng-bind="n.state.origin.text"></span>
 		</li>
 	</ul>
 </div>
@@ -139,7 +139,7 @@ require(['jquery', 'routeApp', 'i18n'], function($, routeApp, i18n) {
 
 			// 国际化
 			$scope.changeLang = function(langType) {
-				if (langType.toUpperCase() === i18n.getLangType()) return;
+				if (langType === i18n.getLangType()) return;
 
 				i18n.setLangType(langType).then(function() {
 					$scope.crumbs = changeCrumbs(routeApp.$state.current);
@@ -196,16 +196,14 @@ require(['jquery', 'routeApp', 'i18n'], function($, routeApp, i18n) {
 	function changeCrumbs(curState) {
 		var state = curState,
 			crumbs = [{
-				text: state.origin.text,
-				name: state.name,
+				state: state,
 				active: true
 			}];
 
 		while (state.parents) {
 			state = state.parents;
 			crumbs.unshift({
-				text: state.origin.text,
-				name: state.name
+				state: state
 			});
 		}
 		return crumbs;

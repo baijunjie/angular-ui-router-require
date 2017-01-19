@@ -24,7 +24,10 @@
  *                   from: '/^\/foo\//i', // 可选。字符串或者正则表达式，所有匹配的路径都会重定向到该页面。默认为空。
  *                                        // '*' 表示其余 url 都重定向到该页面。
  *                                        // '/path/*' 表示与星号之前路径匹配的所有 url 都会重定向到该页面。
- *                   children: [ ... ], // 可选。子路由数组
+ *                   params: '', // 可选。字符串或者对象，定义路由中携带的参数。
+ *                               // 如果是字符串，形式为 ':id'，并且参数会在 url 中体现。
+ *                               // 如果是对象，形式为 { id: '' }，并且参数不会在 url 中体现。
+ *                   children: [ ... ], // 可选。子路由数组。
  *               }, ... ])
  *
  * - start       启动应用。可以传入一个 DOM 元素，表示应用的挂在对象。默认为 document。
@@ -234,7 +237,6 @@
 			if (route.component) {
 
 				var url,
-					resolve,
 					fileName = fileNameReg.exec(route.component),
 					from = typeof route.from === 'string' && '/' + route.from.replace(slashStartReg, '') || route.from;
 
@@ -247,8 +249,15 @@
 					}
 				}
 
+				state = {
+					url: url,
+					templateUrl: route.component + '/' + fileName + '.html',
+					parents: parentRoute || null,
+					origin: route
+				};
+
 				if (route.hasjs !== false) {
-					resolve = ['$q', function($q) {
+					state.resolve = ['$q', function($q) {
 						var defer = $q.defer();
 						require([route.component + '/' + fileName + '.js'], function(routeModule) {
 							routeApp.curRoute = routeModule;
@@ -260,13 +269,14 @@
 					}];
 				}
 
-				state = {
-					url: url,
-					resolve: resolve,
-					templateUrl: route.component + '/' + fileName + '.html',
-					parents: parentRoute || null,
-					origin: route
-				};
+				if (route.params) {
+					var typeStr = typeof route.params;
+					if (typeStr === 'string') {
+						state.url = state.url.replace(slashEndReg, '') + '/' + route.params.replace(slashStartReg, '');
+					} else if (typeStr === 'object') {
+						state.params = route.params;
+					}
+				}
 
 				$stateProvider.state(route.name, state);
 

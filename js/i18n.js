@@ -108,6 +108,21 @@
 		}
 	}]);
 
+	// 返回对象中相同的语言类型 key
+	function checkLangType(langType, obj) {
+		if (cfg.caseSensitive) {
+			return obj[langType] ? langType : false;
+		} {
+			var reg = new RegExp('^' + langType + '$', 'i');
+			for (langType in obj) {
+				if (reg.test(langType)) {
+					return langType;
+				}
+			}
+			return false;
+		}
+	}
+
 	function extend() {
 		var options, name, src, copy, copyIsArray, clone,
 			target = arguments[0] || {},
@@ -223,7 +238,7 @@
 	function getAllLang(langType) {
 		return langType === undefined ?
 			angular.copy(langSet) :
-			angular.copy(langSet[cfg.caseSensitive ? langType : langType.toUpperCase()]);
+			angular.copy(langSet[checkLangType(langType, langSet)]);
 	}
 
 	/**
@@ -233,21 +248,22 @@
 	 */
 	function setAllLang(langType, langDict) {
 		var newLangSet,
-			caseLangType;
+			langTypeExsit;
 
 		if (typeof langType === 'object') {
 			newLangSet = langType;
 		} else if (typeof langType === 'string') {
-			caseLangType = cfg.caseSensitive ? langType : langType.toUpperCase();
 			newLangSet = {};
-			newLangSet[caseLangType] = langDict;
+			newLangSet[langType] = langDict;
 		} else {
 			return i18n;
 		}
 
 		for (langType in newLangSet) {
-			caseLangType = cfg.caseSensitive ? langType : langType.toUpperCase();
-			langSet[caseLangType] = extend({}, langSet[caseLangType], newLangSet[langType]);
+			if (!(langTypeExsit = checkLangType(langType, langSet))) {
+				langTypeExsit = langType;
+			}
+			langSet[langTypeExsit] = extend({}, langSet[langTypeExsit], newLangSet[langType]);
 		}
 
 		if (i18n.$translateProvider) {
@@ -275,8 +291,9 @@
 	 * @return {Promise}                返回一个 Promise 对象。Promise 对象 resolve 时，表示语言设置成功，并会将当前语言类型作为参数传入。
 	 */
 	function setLangType(langType) {
-		if (!cfg.caseSensitive) {
-			langType = langType.toUpperCase();
+		var langTypeExsit;
+		if (langTypeExsit = checkLangType(langType, langSet)) {
+			langType = langTypeExsit;
 		}
 
 		var defer = q.defer();
@@ -300,15 +317,15 @@
 					defer.resolve();
 				});
 			});
-		} else if (cfg.paths[langType]) {
-			var options = extend(true, {}, cfg.http, { url: cfg.paths[langType] });
+		} else if (langTypeExsit = checkLangType(langType, cfg.paths)) {
+			var options = extend(true, {}, cfg.http, { url: cfg.paths[langTypeExsit] });
 
 			ajax(options)
 				.then(function(response) {
 					if (response.status === 200) {
 						langSet[langType] = response.data;
-						i18n.$translateProvider.translations(langType, response.data);
 						curLangType = langType;
+						i18n.$translateProvider.translations(langType, response.data);
 						angular.forEach(callbackSet['requireLangDone'], function(cb) {
 							cb.call(i18n, langType);
 						});
@@ -342,30 +359,7 @@
 	 * @param {Object} config 配置对象
 	 */
 	function config(config) {
-		if (!config) return i18n;
-
-		extend(cfg, {
-			caseSensitive: config.caseSensitive
-		});
-
-		if (!cfg.caseSensitive) {
-			var langType,
-				paths = config.paths;
-
-			if (paths) {
-				config.paths = {};
-				for (langType in paths) {
-					config.paths[langType.toUpperCase()] = paths[langType];
-				}
-			}
-
-			if (config.defLangType) {
-				config.defLangType = config.defLangType.toUpperCase();
-			}
-		}
-
-		extend(true, cfg, config);
-
+		if (config) extend(true, cfg, config);
 		return i18n;
 	}
 
