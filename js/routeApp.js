@@ -63,10 +63,10 @@
 (function(root, factory) {
 	'use strict';
 
-	if (typeof define === 'function' && define.amd) {
-		define(['angular', 'angular-ui-router'], factory);
-	} else if (typeof exports === 'object') {
+	if (typeof module === 'object' && typeof exports === 'object') {
 		module.exports = factory(require('angular'), require('angular-ui-router'));
+	} else if (typeof define === 'function' && define.amd) {
+		define(['angular', 'angular-ui-router'], factory);
 	} else {
 		root.routeApp = factory(root.angular);
 	}

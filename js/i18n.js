@@ -30,10 +30,10 @@
 (function(root, factory) {
 	'use strict';
 
-	if (typeof define === 'function' && define.amd) {
-		define(['angular', 'angular-translate'], factory);
-	} else if (typeof exports === 'object') {
+	if (typeof module === 'object' && typeof exports === 'object') {
 		module.exports = factory(require('angular'), require('angular-translate'));
+	} else if (typeof define === 'function' && define.amd) {
+		define(['angular', 'angular-translate'], factory);
 	} else {
 		root.i18n = factory(root.angular);
 	}
