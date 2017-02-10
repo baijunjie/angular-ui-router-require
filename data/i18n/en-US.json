@@ -1,7 +1,15 @@
 {
-	"WELCOME": "Welcome",
-	"HOME": "Home",
-	"GO_TO_FOO": "Go to Foo",
-	"GO_TO_BAR": "Go to Bar",
-	"I_AM": "I am"
+	"COMMON": {
+		"WELCOME": "Welcome",
+		"HOME": "Home",
+		"I_AM": "I am"
+	},
+
+	"FOO": {
+		"GO_TO_FOO": "Go to Foo"
+	},
+
+	"BAR": {
+		"GO_TO_BAR": "Go to Bar"
+	}
 }

@@ -1,7 +1,15 @@
 {
-	"WELCOME": "欢迎",
-	"HOME": "首页",
-	"GO_TO_FOO": "跳转到 Foo",
-	"GO_TO_BAR": "跳转到 Bar",
-	"I_AM": "我是"
+	"COMMON": {
+		"WELCOME": "欢迎",
+		"HOME": "首页",
+		"I_AM": "我是"
+	},
+
+	"FOO": {
+		"GO_TO_FOO": "跳转到 Foo"
+	},
+
+	"BAR": {
+		"GO_TO_BAR": "跳转到 Bar"
+	}
 }

@@ -1,10 +1,10 @@
 [{
-	"i18n": "GO_TO_FOO",
+	"i18n": "FOO.GO_TO_FOO",
 	"name": "foo",
 	"component": "page/foo",
 
 	"children": [{
-		"i18n": "GO_TO_BAR",
+		"i18n": "BAR.GO_TO_BAR",
 		"name": "bar",
 		"component": "page/bar"
 	}]

@@ -1,5 +1,5 @@
 /**
- * Angular 1.X 国际化 v0.2.0
+ * Angular 1.X 国际化 v0.2.1
  * @author BaiJunjie
  *
  * i18n  是模块返回的对象，包含若干属性与方法。
@@ -195,6 +195,27 @@
 		return target;
 	}
 
+	// 将多级对象转化成一级对象
+	function convertObj(obj, baseKey) {
+		baseKey = baseKey || '';
+
+		var key,
+			value,
+			newObj = {};
+
+		for (var k in obj) {
+			key = baseKey + k;
+			value = obj[k];
+			if (typeof value === 'object') {
+				extend(newObj, convertObj(value, key + '.'));
+			} else {
+				newObj[key] = value;
+			}
+		}
+
+		return newObj;
+	}
+
 	/**
 	 * 获取当前语言
 	 * @param  {String}        key  可选。传入语言 key
@@ -206,24 +227,29 @@
 
 	/**
 	 * 设置当前语言
-	 * @param {String|Object} key    传入语言 key。如果传入的是对象，则会将该对象与当前语言字典对象合并。
-	 * @param {String}        value  传入 key 对应的 value。
+	 * @param {String|Object} key    传入语言 key。如果传入的是对象，则会将该对象与当前语言字典对象合并，此时第二个参数 value 会被忽略。
+	 * @param {String|Object} value  传入 key 对应的 value。
 	 */
 	function setLang(key, value) {
 		if (!curLangType) return;
 
 		var langDict;
 		if (typeof key === 'object') {
-			langDict = key;
+			langDict = convertObj(key);
 		} else {
-			langDict = {};
-			langDict[key] = value;
+			if (typeof value === 'object') {
+				langDict = convertObj(value, key);
+			} else {
+				langDict = {};
+				langDict[key] = value;
+			}
 		}
 
 		langSet[curLangType] = extend({}, langSet[curLangType], langDict);
 
 		if (i18n.$translateProvider) {
 			i18n.$translateProvider.translations(curLangType, langSet[curLangType]);
+			// 语言包更新完后，需要重新使用才能更新到视图
 			i18n.$translate.use(curLangType);
 		}
 
@@ -243,7 +269,7 @@
 
 	/**
 	 * 设置全部语言对象
-	 * @param {String|Object} langType  传入语言类型。如果传入的是对象，则会将该对象与包含所有语言字典对象的集合合并。
+	 * @param {String|Object} langType  传入语言类型。如果传入的是对象，则会将该对象与包含所有语言字典对象的集合合并，此时第二个参数 langDict 会被忽略。
 	 * @param {Object}        langDict  传入语言字典对象。
 	 */
 	function setAllLang(langType, langDict) {
@@ -263,13 +289,13 @@
 			if (!(langTypeExsit = checkLangType(langType, langSet))) {
 				langTypeExsit = langType;
 			}
+			newLangSet[langType] = convertObj(newLangSet[langType]);
 			langSet[langTypeExsit] = extend({}, langSet[langTypeExsit], newLangSet[langType]);
+
+			i18n.$translateProvider && i18n.$translateProvider.translations(langTypeExsit, langSet[langTypeExsit]);
 		}
 
 		if (i18n.$translateProvider) {
-			for (langType in langSet) {
-				i18n.$translateProvider.translations(langType, langSet[langType]);
-			}
 			// 语言包更新完后，需要重新使用才能更新到视图
 			i18n.$translate.use(curLangType);
 		}
@@ -323,9 +349,8 @@
 			ajax(options)
 				.then(function(response) {
 					if (response.status === 200) {
-						langSet[langType] = response.data;
 						curLangType = langType;
-						i18n.$translateProvider.translations(langType, response.data);
+						setLang(response.data);
 						angular.forEach(callbackSet['requireLangDone'], function(cb) {
 							cb.call(i18n, langType);
 						});

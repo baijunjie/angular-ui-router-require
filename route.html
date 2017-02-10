@@ -83,7 +83,7 @@ ul, li {
 <body ontouchstart ng-controller="mainCtrl">
 
 <div class="header">
-	<div translate="WELCOME"></div>
+	<div translate="COMMON.WELCOME"></div>
 	<div class="language">
 		<a href="javascript:void(0);" ng-click="changeLang('zh-CN')">中文</a>
 		<span> | </span>
@@ -167,7 +167,7 @@ require(['jquery', 'routeApp', 'i18n'], function($, routeApp, i18n) {
 		});
 
 		var routes = [{
-			i18n: 'HOME',
+			i18n: 'COMMON.HOME',
 			name: 'home',
 			path: '/',
 			from: '*',
