@@ -222,7 +222,7 @@
 	 * @return {String|Object}      返回当前语言类型下 key 的对应值。如果没有传参，则返回当前语言字典对象。
 	 */
 	function getLang(key) {
-		return key === undefined ? angular.copy(langSet[curLangType]) : (langSet[curLangType] && langSet[curLangType][key]);
+		return key === undefined ? angular.copy(langSet[curLangType]) : (langSet[curLangType] && langSet[curLangType][key] || key);
 	}
 
 	/**
