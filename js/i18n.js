@@ -1,5 +1,5 @@
 /**
- * Angular 1.X 国际化 v0.2.1
+ * Angular 1.X 国际化 v0.2.2
  * @author BaiJunjie
  *
  * i18n  是模块返回的对象，包含若干属性与方法。
@@ -222,7 +222,8 @@
 	 * @return {String|Object}      返回当前语言类型下 key 的对应值。如果没有传参，则返回当前语言字典对象。
 	 */
 	function getLang(key) {
-		return key === undefined ? angular.copy(langSet[curLangType]) : (langSet[curLangType] && langSet[curLangType][key] || key);
+		var langType = curLangType || cfg.defLangType;
+		return key === undefined ? angular.copy(langSet[langType]) : (langSet[langType] && langSet[langType][key] || key);
 	}
 
 	/**
@@ -231,7 +232,8 @@
 	 * @param {String|Object} value  传入 key 对应的 value。
 	 */
 	function setLang(key, value) {
-		if (!curLangType) return;
+		var langType = curLangType || cfg.defLangType;
+		if (!langType) return;
 
 		var langDict;
 		if (typeof key === 'object') {
@@ -245,12 +247,12 @@
 			}
 		}
 
-		langSet[curLangType] = extend({}, langSet[curLangType], langDict);
+		langSet[langType] = extend({}, langSet[langType], langDict);
 
 		if (i18n.$translateProvider) {
-			i18n.$translateProvider.translations(curLangType, langSet[curLangType]);
+			i18n.$translateProvider.translations(langType, langSet[langType]);
 			// 语言包更新完后，需要重新使用才能更新到视图
-			i18n.$translate.use(curLangType);
+			curLangType && i18n.$translate.use(curLangType);
 		}
 
 		return i18n;
@@ -295,7 +297,7 @@
 			i18n.$translateProvider && i18n.$translateProvider.translations(langTypeExsit, langSet[langTypeExsit]);
 		}
 
-		if (i18n.$translateProvider) {
+		if (i18n.$translate && curLangType) {
 			// 语言包更新完后，需要重新使用才能更新到视图
 			i18n.$translate.use(curLangType);
 		}
