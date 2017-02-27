@@ -21,3 +21,5 @@ require.config({
 	},
 	urlArgs: 'debug=' + (+ new Date())
 });
+
+require(['main']);
