@@ -1,4 +1,5 @@
 require(['jquery', 'routeApp', 'i18n'], function($, routeApp, i18n) {
+	routeApp.version = '1.0.0';
 
 	routeApp.module.requires.push('i18n');
 

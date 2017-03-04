@@ -1,5 +1,5 @@
 /**
- * Angular 1.X 组件化路由按需加载实现 v0.2.0
+ * Angular 1.X 组件化路由按需加载实现 v0.2.1
  * @author BaiJunjie
  *
  * https://github.com/baijunjie/angular-ui-router-require
@@ -11,6 +11,7 @@
  * - angular   angular 对象的引用。
  * - module    routeApp 的 module 对象引用。
  * - curRoute  路由的当前路线 js 模块的返回值。
+ * - version   加载路由资源时的版本号后缀。
  * - $state    angular-ui-router 的 $state 服务引用。
  *
  * 方法：
@@ -84,6 +85,7 @@
 			angular: angular,
 			module: angular.module('routeApp', ['ui.router']),
 			curRoute: null,
+			version: '',
 			install: install,
 			start: start,
 			on: on,
@@ -238,6 +240,7 @@
 
 				var url,
 					fileName = fileNameReg.exec(route.component),
+					version = routeApp.version ? '?v=' + routeApp.version : '',
 					from = typeof route.from === 'string' && '/' + route.from.replace(slashStartReg, '') || route.from;
 
 				if (route.path) {
@@ -251,7 +254,7 @@
 
 				state = {
 					url: url,
-					templateUrl: route.component + '/' + fileName + '.html',
+					templateUrl: route.component + '/' + fileName + '.html' + version,
 					parents: parentRoute || null,
 					origin: route
 				};
@@ -259,7 +262,7 @@
 				if (route.hasjs !== false) {
 					state.resolve = ['$q', function($q) {
 						var defer = $q.defer();
-						require([route.component + '/' + fileName + '.js'], function(routeModule) {
+						require([route.component + '/' + fileName + '.js' + version], function(routeModule) {
 							routeApp.curRoute = routeModule;
 							defer.resolve();
 						}, function(err) {
