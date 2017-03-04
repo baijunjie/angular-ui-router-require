@@ -240,7 +240,7 @@
 
 				var url,
 					fileName = fileNameReg.exec(route.component),
-					version = routeApp.version ? '?v=' + routeApp.version : '',
+					version = routeApp.version ? '?' + routeApp.version : '',
 					from = typeof route.from === 'string' && '/' + route.from.replace(slashStartReg, '') || route.from;
 
 				if (route.path) {
