@@ -1,5 +1,5 @@
 /**
- * Angular 1.X 组件化路由按需加载实现 v0.2.1
+ * Angular 1.X 组件化路由按需加载实现 v0.2.2
  * @author BaiJunjie
  *
  * https://github.com/baijunjie/angular-ui-router-require

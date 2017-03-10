@@ -1,5 +1,5 @@
 /**
- * Angular 1.X 国际化 v0.2.2
+ * Angular 1.X 国际化 v0.2.3
  * @author BaiJunjie
  *
  * i18n  是模块返回的对象，包含若干属性与方法。
@@ -254,7 +254,7 @@
 			langDict[key] = value;
 		}
 
-		langSet[langType] = extend({}, langSet[langType], langDict);
+		langSet[langType] = extend(langSet[langType], langDict);
 
 		if (i18n.$translateProvider) {
 			i18n.$translateProvider.translations(langType, langSet[langType]);
@@ -299,7 +299,7 @@
 				langTypeExsit = langType;
 			}
 			newLangSet[langType] = convertObj(newLangSet[langType]);
-			langSet[langTypeExsit] = extend({}, langSet[langTypeExsit], newLangSet[langType]);
+			langSet[langTypeExsit] = extend(langSet[langTypeExsit], newLangSet[langType]);
 
 			i18n.$translateProvider && i18n.$translateProvider.translations(langTypeExsit, langSet[langTypeExsit]);
 		}
