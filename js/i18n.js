@@ -195,6 +195,15 @@
 		return target;
 	}
 
+	// 执行指定事件类型的 callback
+	// 并将第二个参数及之后参数传递给 callback
+	function execCallbak(type) {
+		var args = Array.prototype.slice.call(arguments, 1);
+		angular.forEach(callbackSet[type], function(cb) {
+			cb.apply(i18n, args);
+		});
+	}
+
 	// 将多级对象转化成一级对象
 	function convertObj(obj, baseKey) {
 		baseKey = baseKey || '';
@@ -238,13 +247,11 @@
 		var langDict;
 		if (typeof key === 'object') {
 			langDict = convertObj(key);
+		} else if (typeof value === 'object') {
+			langDict = convertObj(value, key);
 		} else {
-			if (typeof value === 'object') {
-				langDict = convertObj(value, key);
-			} else {
-				langDict = {};
-				langDict[key] = value;
-			}
+			langDict = {};
+			langDict[key] = value;
 		}
 
 		langSet[langType] = extend({}, langSet[langType], langDict);
@@ -327,9 +334,7 @@
 		var defer = q.defer();
 
 		defer.promise.then(function() {
-			angular.forEach(callbackSet['change'], function(cb) {
-				cb.call(i18n, langType);
-			});
+			execCallbak('change', langType);
 		});
 
 		if (langType === curLangType) {
@@ -353,9 +358,7 @@
 					if (response.status === 200) {
 						curLangType = langType;
 						setLang(response.data);
-						angular.forEach(callbackSet['requireLangDone'], function(cb) {
-							cb.call(i18n, langType);
-						});
+						execCallbak('requireLangDone', langType);
 						i18n.$translate.use(curLangType).then(function() {
 							// 待语言渲染完成后触发
 							setTimeout(function() {
@@ -363,15 +366,11 @@
 							});
 						});
 					} else {
-						angular.forEach(callbackSet['requireLangFail'], function(cb) {
-							cb.call(i18n, langType);
-						});
+						execCallbak('requireLangFail', langType);
 						defer.reject();
 					}
 				}, function() {
-					angular.forEach(callbackSet['requireLangFail'], function(cb) {
-						cb.call(i18n, langType);
-					});
+					execCallbak('requireLangFail', langType);
 					defer.reject();
 				});
 		} else {

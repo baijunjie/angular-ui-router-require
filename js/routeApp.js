@@ -101,18 +101,12 @@
 
 	routeApp.module.run(['$rootScope', '$state', function($rootScope, $state) {
 		$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
-			var arg = arguments,
-				curRoute = routeApp.curRoute;
-			angular.forEach(callbackSet['changeBefore'], function(cb) {
-				cb.apply(routeApp, arg);
-			});
+			execCallbak('changeBefore', arguments);
+			var curRoute = routeApp.curRoute;
 			returnValue = curRoute && curRoute.uninstall && curRoute.uninstall();
 		});
 		$rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-			var arg = arguments;
-			angular.forEach(callbackSet['change'], function(cb) {
-				cb.apply(routeApp, arg);
-			});
+			execCallbak('change', arguments);
 		});
 		$rootScope.$on('$viewContentLoaded', function(event) {
 			var args = arguments;
@@ -121,14 +115,19 @@
 			setTimeout(function() {
 				var curRoute = routeApp.curRoute;
 				curRoute && curRoute.install && curRoute.install(returnValue);
-				angular.forEach(callbackSet['changeAfter'], function(cb) {
-					cb.apply(routeApp, arg);
-				});
+				execCallbak('changeAfter', args);
 			});
 		});
 
 		routeApp.$state = $state;
 	}]);
+
+	// 执行指定事件类型的 callback
+	function execCallbak(type, args) {
+		angular.forEach(callbackSet[type], function(cb) {
+			cb.apply(routeApp, args);
+		});
+	}
 
 	function install(routes) {
 		routeApp.module.config(['$stateProvider', '$urlRouterProvider',
