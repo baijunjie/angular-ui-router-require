@@ -118,6 +118,7 @@ require(['routeApp'], function(routeApp) {
 - `angular` - angular 对象的引用。
 - `module` - routeApp 的 module 对象引用。
 - `curRoute` - 路由的当前路线 js 模块的返回值。
+- `version` - 加载路由资源时的版本号后缀。
 - `$state` - angular-ui-router 的 $state 服务引用。
 
 #### 方法：
