@@ -232,7 +232,11 @@
 	 */
 	function getLang(key) {
 		var langType = curLangType || cfg.defLangType;
-		return key === undefined ? angular.copy(langSet[langType]) : (langSet[langType] && langSet[langType][key] || key);
+		return (key === undefined) ?
+			angular.copy(langSet[langType]) :
+			(langSet[langType] && angular.isString(langSet[langType][key])) ?
+			langSet[langType][key] :
+			key;
 	}
 
 	/**
