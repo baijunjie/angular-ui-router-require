@@ -132,7 +132,7 @@ require(['routeApp'], function(routeApp) {
 
 #### 事件：
 
-- `changeBefore` - 注册路的 `changeBefore` 监听，对应 angular-ui-router 的 `$stateChangeStart` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
+- `changeBefore` - 注册路由的 `changeBefore` 监听，对应 angular-ui-router 的 `$stateChangeStart` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
 - `change` - 注册路由的 `change` 监听，对应 angular-ui-router 的 `$stateChangeSuccess` 事件。回调参数分别为 `event`, `toState`, `toParams`, `fromState`, `fromParams`。
 - `changeAfter` - 注册路由的 `changeAfter` 监听，对应 angular-ui-router 的 `$viewContentLoaded` 事件。回调参数为 `event`。
 
