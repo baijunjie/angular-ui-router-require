@@ -198,7 +198,7 @@
 	// 并将第二个参数及之后参数传递给 callback
 	function execCallbak(type) {
 		var args = Array.prototype.slice.call(arguments, 1);
-		angular.forEach(callbackSet[type], function(cb) {
+		angular.forEach(callbackSet[type].concat(), function(cb) {
 			cb.apply(i18n, args);
 		});
 	}

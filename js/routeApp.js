@@ -124,7 +124,7 @@
 
 	// 执行指定事件类型的 callback
 	function execCallbak(type, args) {
-		angular.forEach(callbackSet[type], function(cb) {
+		angular.forEach(callbackSet[type].concat(), function(cb) {
 			cb.apply(routeApp, args);
 		});
 	}
