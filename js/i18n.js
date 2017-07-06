@@ -112,7 +112,7 @@
 	function checkLangType(langType, obj) {
 		if (cfg.caseSensitive) {
 			return obj[langType] ? langType : false;
-		} {
+		} else {
 			var reg = new RegExp('^' + langType + '$', 'i');
 			for (langType in obj) {
 				if (reg.test(langType)) {
