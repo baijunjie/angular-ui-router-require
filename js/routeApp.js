@@ -203,6 +203,7 @@
 
 			if (callback === undefined) {
 				cbSet[type].length = 0;
+				return;
 			}
 		} else {
 			return routeApp;

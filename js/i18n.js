@@ -194,15 +194,6 @@
         return target;
 	}
 
-	// 执行指定事件类型的 callback
-	// 并将第二个参数及之后参数传递给 callback
-	function execCallbak(type) {
-		var args = Array.prototype.slice.call(arguments, 1);
-		angular.forEach(callbackSet[type].concat(), function(cb) {
-			cb.apply(i18n, args);
-		});
-	}
-
 	// 将多级对象转化成一级对象
 	function convertObj(obj, baseKey) {
 		baseKey = baseKey || '';
@@ -393,6 +384,18 @@
 	}
 
 	/**
+	 * 执行指定事件类型的 callback
+	 * 并将第二个参数及之后参数传递给 callback
+	 * @param  {String} type 事件类型
+	 */
+	function execCallbak(type) {
+		var args = Array.prototype.slice.call(arguments, 1);
+		angular.forEach(callbackSet[type].concat(), function(cb) {
+			cb.apply(i18n, args);
+		});
+	}
+
+	/**
 	 * 注册事件监听
 	 * @param  {String}             type      事件类型。
 	 * @param  {Function}           callback  事件监听函数。
@@ -446,6 +449,7 @@
 
 			if (callback === undefined) {
 				cbSet[type].length = 0;
+				return;
 			}
 		} else {
 			return i18n;
